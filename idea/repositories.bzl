@@ -49,24 +49,6 @@ def idea_rules_dependencies():
 
     _maybe(
         http_archive,
-        name = "build_bazel_apple_support",
-        urls = [
-            "https://github.com/bazelbuild/apple_support/releases/download/0.11.0/apple_support.0.11.0.tar.gz",
-        ],
-        sha256 = "76df040ade90836ff5543888d64616e7ba6c3a7b33b916aa3a4b68f342d1b447",
-    )
-
-    _maybe(
-        http_archive,
-        name = "rules_cc",
-        # Latest 08-10-20
-        urls = ["https://github.com/bazelbuild/rules_cc/archive/1477dbab59b401daa94acedbeaefe79bf9112167.tar.gz"],
-        sha256 = "b87996d308549fc3933f57a786004ef65b44b83fd63f1b0303a4bbc3fd26bbaf",
-        strip_prefix = "rules_cc-1477dbab59b401daa94acedbeaefe79bf9112167/",
-    )
-
-    _maybe(
-        http_archive,
         name = "com_github_apple_idea_protobuf",
         urls = ["https://github.com/apple/idea-protobuf/archive/1.12.0.zip"],
         sha256 = "a9c1c14d81df690ed4c15bfb3c0aab0cb7a3f198ee95620561b89b1da7b76a9f",
