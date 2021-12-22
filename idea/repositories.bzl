@@ -15,10 +15,6 @@
 """Definitions for handling Bazel repositories used by the idea rules."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load(
-    "@build_flare_rules_idea//idea/internal:idea_autoconfiguration.bzl",
-    "idea_autoconfiguration",
-)
 
 def _maybe(repo_rule, name, **kwargs):
     """Executes the given repository rule if it hasn't been executed already.
@@ -102,7 +98,3 @@ def idea_rules_dependencies():
         sha256 = "61a58363f56c5fd84d4ebebe0d9b5dd90c74ae170405a7b9018e8cf698e679de",
     )
 
-    _maybe(
-        idea_autoconfiguration,
-        name = "build_flare_rules_idea_local_config",
-    )

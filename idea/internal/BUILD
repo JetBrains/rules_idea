@@ -114,11 +114,6 @@ bzl_library(
     ],
 )
 
-bzl_library(
-    name = "build_settings",
-    srcs = ["build_settings.bzl"],
-)
-
 # Consumed by Bazel integration tests.
 filegroup(
     name = "for_bazel_tests",

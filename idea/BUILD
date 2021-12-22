@@ -1,9 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_setting")
-load(
-    "//idea/internal:build_settings.bzl",
-    "per_module_ideacopt_flag",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -19,7 +15,6 @@ bzl_library(
     srcs = ["repositories.bzl"],
     deps = [
         ":bazel_tools_bzl",
-        "//idea/internal:idea_autoconfiguration",
     ],
 )
 
@@ -51,13 +46,6 @@ filegroup(
     visibility = [
         "//:__pkg__",
     ],
-)
-
-# User settable flag that specifies additional idea copts on a per-ideamodule basis.
-per_module_ideacopt_flag(
-    name = "per_module_ideacopt",
-    build_setting_default = "",
-    visibility = ["//visibility:public"],
 )
 
 # Configuration setting for enabling the generation of ideainterface files.

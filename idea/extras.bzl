@@ -15,8 +15,6 @@
 """Definitions for handling Bazel transitive repositories used by the 
 dependencies of the idea rules.
 """
-
-load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 load(
     "@rules_proto//proto:repositories.bzl",
     "rules_proto_dependencies",
@@ -31,8 +29,6 @@ def idea_rules_extra_dependencies():
     the idea rules are downloaded and that they are isolated from changes
     to those dependencies.
     """
-
-    apple_support_dependencies()
 
     rules_proto_dependencies()
 
