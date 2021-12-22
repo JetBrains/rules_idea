@@ -18,65 +18,65 @@ This file is the public interface that users should import to use the idea
 rules. Do not import definitions from the `internal` subdirectory directly.
 
 To use the idea build rules in your BUILD files, load them from
-`@build_bazel_rules_idea//idea:idea.bzl`.
+`@build_flare_rules_idea//idea:idea.bzl`.
 
 For example:
 
 ```build
-load("@build_bazel_rules_idea//idea:idea.bzl", "idea_library")
+load("@build_flare_rules_idea//idea:idea.bzl", "idea_library")
 ```
 """
 
 load(
-    "@build_bazel_rules_idea//idea/internal:providers.bzl",
+    "@build_flare_rules_idea//idea/internal:providers.bzl",
     _ideaInfo = "ideaInfo",
     _ideaProtoInfo = "ideaProtoInfo",
     _ideaToolchainInfo = "ideaToolchainInfo",
     _ideaUsageInfo = "ideaUsageInfo",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_binary_test.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_binary_test.bzl",
     _idea_binary = "idea_binary",
     _idea_test = "idea_test",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_c_module.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_c_module.bzl",
     _idea_c_module = "idea_c_module",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_clang_module_aspect.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_clang_module_aspect.bzl",
     _idea_clang_module_aspect = "idea_clang_module_aspect",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_common.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_common.bzl",
     _idea_common = "idea_common",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_feature_allowlist.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_feature_allowlist.bzl",
     _idea_feature_allowlist = "idea_feature_allowlist",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_grpc_library.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_grpc_library.bzl",
     _idea_grpc_library = "idea_grpc_library",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_import.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_import.bzl",
     _idea_import = "idea_import",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_library.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_library.bzl",
     _idea_library = "idea_library",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_module_alias.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_module_alias.bzl",
     _idea_module_alias = "idea_module_alias",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_proto_library.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_proto_library.bzl",
     _idea_proto_library = "idea_proto_library",
 )
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_usage_aspect.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_usage_aspect.bzl",
     _idea_usage_aspect = "idea_usage_aspect",
 )
 

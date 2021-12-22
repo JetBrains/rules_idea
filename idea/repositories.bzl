@@ -16,7 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load(
-    "@build_bazel_rules_idea//idea/internal:idea_autoconfiguration.bzl",
+    "@build_flare_rules_idea//idea/internal:idea_autoconfiguration.bzl",
     "idea_autoconfiguration",
 )
 
@@ -54,7 +54,7 @@ def idea_rules_dependencies():
         sha256 = "a9c1c14d81df690ed4c15bfb3c0aab0cb7a3f198ee95620561b89b1da7b76a9f",
         strip_prefix = "idea-protobuf-1.12.0/",
         type = "zip",
-        build_file = "@build_bazel_rules_idea//third_party:com_github_apple_idea_protobuf/BUILD.overlay",
+        build_file = "@build_flare_rules_idea//third_party:com_github_apple_idea_protobuf/BUILD.overlay",
     )
 
     _maybe(
@@ -64,7 +64,7 @@ def idea_rules_dependencies():
         sha256 = "b9818134f497df073cb49e0df59bfeea801291230d6fc048fdc6aa76e453a3cb",
         strip_prefix = "grpc-idea-0.9.0/",
         type = "zip",
-        build_file = "@build_bazel_rules_idea//third_party:com_github_grpc_grpc_idea/BUILD.overlay",
+        build_file = "@build_flare_rules_idea//third_party:com_github_grpc_grpc_idea/BUILD.overlay",
     )
 
     _maybe(
@@ -75,7 +75,7 @@ def idea_rules_dependencies():
         ],
         sha256 = "69cc88207ce91347ea530b227ff0776db82dcb8de6704e1a3d74f4841bc651cf",
         type = "zip",
-        build_file = "@build_bazel_rules_idea//third_party:com_github_nlohmann_json/BUILD.overlay",
+        build_file = "@build_flare_rules_idea//third_party:com_github_nlohmann_json/BUILD.overlay",
     )
 
     _maybe(
@@ -95,8 +95,8 @@ def idea_rules_dependencies():
     # Note: this is only loaded if idea.index_while_building_v2 is enabled
     _maybe(
         http_archive,
-        name = "build_bazel_rules_idea_index_import",
-        build_file = "@build_bazel_rules_idea//third_party:build_bazel_rules_idea_index_import/BUILD.overlay",
+        name = "build_flare_rules_idea_index_import",
+        build_file = "@build_flare_rules_idea//third_party:build_flare_rules_idea_index_import/BUILD.overlay",
         canonical_id = "index-import-5.3.2.6",
         urls = ["https://github.com/MobileNativeFoundation/index-import/releases/download/5.3.2.6/index-import.zip"],
         sha256 = "61a58363f56c5fd84d4ebebe0d9b5dd90c74ae170405a7b9018e8cf698e679de",
@@ -104,5 +104,5 @@ def idea_rules_dependencies():
 
     _maybe(
         idea_autoconfiguration,
-        name = "build_bazel_rules_idea_local_config",
+        name = "build_flare_rules_idea_local_config",
     )

@@ -1,14 +1,14 @@
-workspace(name = "build_bazel_rules_idea")
+workspace(name = "build_flare_rules_idea")
 
 load(
-    "@build_bazel_rules_idea//idea:repositories.bzl",
+    "@build_flare_rules_idea//idea:repositories.bzl",
     "idea_rules_dependencies",
 )
 
 idea_rules_dependencies()
 
 load(
-    "@build_bazel_rules_idea//idea:extras.bzl",
+    "@build_flare_rules_idea//idea:extras.bzl",
     "idea_rules_extra_dependencies",
 )
 
