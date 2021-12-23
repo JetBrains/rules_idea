@@ -1,3 +1,5 @@
+[![CI](https://github.com/kigster/rules_idea/actions/workflows/bazel.yml/badge.svg)](https://github.com/kigster/rules_idea/actions/workflows/bazel.yml)
+
 # IntelliJ Idea Rules for [Bazel](https://bazel.build)
 
 This repository contains rules for [Bazel](https://bazel.build) that can be used to build and use IDEA's shared indexes.
