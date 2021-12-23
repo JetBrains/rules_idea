@@ -1,0 +1,12 @@
+# IDE
+/.idea
+/.run
+/.ijwb
+/.clwb
+
+# Bazel
+/.bazelrc.user
+/bazel-*
+
+# macOS
+.DS_Store
