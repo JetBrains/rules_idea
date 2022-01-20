@@ -1,0 +1,6 @@
+load("@rules_intellij//intellij:defs.bzl", "setup_intellij_project")
+
+setup_intellij_project(
+    name = "intellij_project",
+    project_dir = ".ijwb",
+)

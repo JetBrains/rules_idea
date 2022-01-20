@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package intellij.indexing.shared.ultimate.persistent.rpc;
+
+option java_multiple_files = true;
+option java_package = "com.intellij.indexing.shared.ultimate.persistent.rpc";
+option java_outer_classname = "IndexingPersistentMediatorProto";
+
+service Daemon {
+    rpc Start (StartupRequest) returns (StartupResponse);
+    rpc Index (IndexRequest) returns (IndexResponse);
+}
+
+message StartupRequest {
+    string project_dir = 1;
+}
+
+message StartupResponse {
+    uint64 project_id = 1;
+}
+
+message IndexRequest {
+    uint64 project_id = 1;
+    string index_id = 2;
+    string index_debug_name = 3;
+    string project_root = 4;
+    repeated string sources = 6;
+}
+
+message IndexResponse {
+    string ijx_path = 1;
+    string ijx_metadata_path = 2;
+    string ijx_sha256_path = 3;
+}

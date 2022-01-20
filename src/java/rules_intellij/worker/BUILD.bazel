@@ -1,0 +1,41 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+copy_file(
+    name = "worker_protocol_proto_file",
+    src = "@workers_proto//file",
+    out = "worker_protocol.proto",
+)
+
+proto_library(
+    name = "worker_protocol_proto",
+    srcs = [":worker_protocol_proto_file"],
+)
+
+java_proto_library(
+    name = "worker_protocol_java_proto",
+    deps = [":worker_protocol_proto"],
+)
+
+java_binary(
+    name = "indexing",
+    srcs = glob(["*.java"]),
+    main_class = "rules_intellij.worker.IndexingWorker",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":worker_protocol_java_proto",
+        "//src/proto:indexing_mediator_grpc_proto",
+        "//src/proto:indexing_mediator_java_proto",
+        "@com_beust_jcommander//jar",
+        "@com_google_protobuf//:protobuf_java",
+        "@com_google_protobuf//:protobuf_java_util",
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//netty",
+        "@io_grpc_grpc_java//protobuf",
+        "@io_grpc_grpc_java//stub",
+        "@maven//:com_google_api_grpc_proto_google_common_protos",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:com_google_guava_guava",
+    ],
+)
