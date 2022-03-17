@@ -1,10 +1,11 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-
-
-IntelliJIndexed = provider(
+IntelliJIndexInfo = provider(
     doc = "Information about intellij indexing",
     fields = {
+        "ijx": "index file",
+        "metadata": "metadata json file",
+        "sha256": "sha sum"
     },
 )
 
@@ -40,12 +41,18 @@ def _run_indexing(ctx, intellij_project, inputs):
         inputs = inputs + [worker_arg_file] + intellij_project.project_files,
         outputs = outputs,
         execution_requirements = {
+            "worker-key-mnemonic": "IntellijIndexing",
             "supports-workers": "1",
+            "supports-multiplex-workers": "1",
             "requires-worker-protocol": "proto",
         },
         arguments = [args] + ["@" + worker_arg_file.path],
     )
-    return outputs
+    return IntelliJIndexInfo(
+        ijx = out_ijx,
+        metadata = out_meta,
+        sha256 = out_sha256,
+    )
 
 def _collect_sources_to_index(ctx):
     to_index = []
@@ -61,7 +68,14 @@ def _indexing_aspect_impl(target, ctx):
         intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project,
         inputs = _collect_sources_to_index(ctx),
     )
-    return [ OutputGroupInfo(index_zip = depset(indexed)),]
+    return [
+        indexed,
+        OutputGroupInfo(indexed_files = depset([
+            indexed.ijx,
+            indexed.metadata,
+            indexed.sha256,
+        ])),
+    ]
 
 indexing_aspect = aspect(
     implementation = _indexing_aspect_impl,

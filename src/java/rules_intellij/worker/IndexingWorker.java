@@ -10,6 +10,7 @@ import java.util.Map;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
+import com.google.common.util.concurrent.FutureCallback;
 import com.google.devtools.build.lib.worker.WorkerProtocol.*;
 import com.intellij.indexing.shared.ultimate.persistent.rpc.IndexRequest;
 import com.intellij.indexing.shared.ultimate.persistent.rpc.IndexResponse;
@@ -76,7 +77,7 @@ public final class IndexingWorker {
             this.projectId = projectId;
         }
 
-        WorkResponse processRequest(WorkRequest workRequest) throws IOException {
+        void processRequest(WorkRequest workRequest) {
             logger.log("WorkRequest", workRequest);
 
             IndexRequest request = IndexRequest.newBuilder()
@@ -90,18 +91,54 @@ public final class IndexingWorker {
                 .setProjectRoot(System.getProperty("user.dir"))
                 .build();
 
-            IndexResponse indexResponse = client.index(request);
-            Path outPath = Paths.get(outDir);
-            new File(indexResponse.getIjxPath()).renameTo(outPath.resolve(name + ".ijx").toFile());
-            new File(indexResponse.getIjxMetadataPath()).renameTo(outPath.resolve(name + ".ijx.metadata.json").toFile());
-            new File(indexResponse.getIjxSha256Path()).renameTo(outPath.resolve(name + ".ijx.sha256").toFile());
+            client.index(
+                request,
+                new FutureCallback<IndexResponse>() {
+                    private final Path outPath = Paths.get(outDir);
 
-            WorkResponse workResponse = WorkResponse.newBuilder()
-                .setRequestId(workRequest.getRequestId())
-                .build();
+                    private void moveOrThrow(String input, String postfix) throws IOException {
+                        File output = outPath.resolve(name + postfix).toFile();
+                        if (new File(input).renameTo(output)) {
+                            return;
+                        }
+                        throw new IOException("Can't move " + input + " to " + output.toString());
+                    }
 
-            logger.log("WorkResponse", workResponse);
-            return workResponse;
+                    @Override
+                    public void onSuccess(IndexResponse indexResponse)  {
+                        try {
+                            moveOrThrow(indexResponse.getIjxPath(), ".ijx");
+                            moveOrThrow(indexResponse.getIjxMetadataPath(), ".ijx.metadata.json");
+                            moveOrThrow(indexResponse.getIjxSha256Path(), ".ijx.sha256");
+
+                            WorkResponse workResponse = WorkResponse.newBuilder()
+                                .setRequestId(workRequest.getRequestId())
+                                .build();
+                            logger.log("WorkResponse", workResponse);
+                            workResponse.writeDelimitedTo(System.out);
+                        } catch (Throwable error) {
+                            onFailure(error);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Throwable error) {
+                        try {
+                            WorkResponse workResponse = WorkResponse.newBuilder()
+                                .setExitCode(1)
+                                .setOutput(error.toString())
+                                .setRequestId(workRequest.getRequestId())
+                                .build();
+
+                            logger.log("WorkResponse", workResponse);
+                            workResponse.writeDelimitedTo(System.out);
+                        } catch (Throwable ioError) {
+                            logger.log("UnrecoverableError", ioError.toString());
+                            System.exit(1);
+                        }
+                    }
+                }
+            );
         }
 
     }
@@ -136,8 +173,7 @@ public final class IndexingWorker {
                 .build()
                 .parse(request.getArgumentsList().toArray(new String[] {}));
 
-            WorkResponse response = worker.processRequest(request);
-            response.writeDelimitedTo(System.out);
+            worker.processRequest(request);
         }
     }
 
