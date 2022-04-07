@@ -3,43 +3,11 @@ local_repository(
     path = "../../",
 )
 
-
-load(
-    "@rules_intellij//intellij:repositories.bzl",
-    "RULES_INTELLIJ_JAVA_ARTIFACTS",
-    "rules_intellij_repositories",
-)
-
+load("@rules_intellij//intellij:repositories.bzl", "rules_intellij_repositories")
 rules_intellij_repositories()
 
-load(
-    "@io_grpc_grpc_java//:repositories.bzl",
-    "IO_GRPC_GRPC_JAVA_ARTIFACTS",
-    "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS",
-    "grpc_java_repositories",
-)
+load("@rules_intellij//intellij:deps_repositories.bzl", "rules_intellij_deps_repositories")
+rules_intellij_deps_repositories()
 
-grpc_java_repositories()
-
-load(
-    "@com_google_protobuf//:protobuf_deps.bzl",
-    "PROTOBUF_MAVEN_ARTIFACTS",
-    "protobuf_deps",
-)
-
-protobuf_deps()
-
-load("@rules_jvm_external//:defs.bzl", "maven_install")
-
-maven_install(
-    artifacts = IO_GRPC_GRPC_JAVA_ARTIFACTS + PROTOBUF_MAVEN_ARTIFACTS + RULES_INTELLIJ_JAVA_ARTIFACTS,
-    generate_compat_repositories = True,
-    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
-    repositories = ["https://repo.maven.apache.org/maven2/"],
-)
-
-load("@maven//:compat.bzl", "compat_repositories")
-
-compat_repositories()
-
-register_toolchains("//:intellij_project")
+load("@rules_intellij//intellij:toolchains.bzl", "rules_intellij_all_toolchains")
+rules_intellij_all_toolchains()

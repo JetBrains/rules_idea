@@ -1,48 +1,23 @@
 workspace(name = "rules_intellij")
 
-load(
-    "//intellij:repositories.bzl",
-    "rules_intellij_repositories",
-    "RULES_INTELLIJ_JAVA_ARTIFACTS",
-)
-
+load("@rules_intellij//intellij:repositories.bzl", "rules_intellij_repositories")
 rules_intellij_repositories()
 
-# For running our own unit tests
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+load("@rules_intellij//intellij:deps_repositories.bzl", "rules_intellij_deps_repositories")
+rules_intellij_deps_repositories()
 
-bazel_skylib_workspace()
-
-# GRPC
-load(
-    "@io_grpc_grpc_java//:repositories.bzl",
-    "IO_GRPC_GRPC_JAVA_ARTIFACTS",
-    "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS",
-    "grpc_java_repositories",
+load("@rules_intellij//intellij:toolchains.bzl", "rules_intellij_deps_toolchains", "intellij")
+rules_intellij_deps_toolchains()
+intellij(
+    name = "idea_ultimate",
+    version = "2021.2.3",
+    sha256 = "89ad86c940ab1cc7dc13882cd705919830ccfb02814789c0f9389fff26af1ad1",
+    type = "ideaIU",
+    plugins = {
+        "indexing-shared-ultimate:intellij.indexing.shared:212.5457.6": "d0dc4254cd961669722febeda81ee6fd480b938efb21a79559b51f8b58500ea6", 
+        "indexing-shared:intellij.indexing.shared.core": "",
+    },
 )
-
-grpc_java_repositories()
-
-load(
-    "@com_google_protobuf//:protobuf_deps.bzl",
-    "PROTOBUF_MAVEN_ARTIFACTS",
-    "protobuf_deps"
-)
-
-protobuf_deps()
-
-load("@rules_jvm_external//:defs.bzl", "maven_install")
-maven_install(
-    artifacts = IO_GRPC_GRPC_JAVA_ARTIFACTS + PROTOBUF_MAVEN_ARTIFACTS + RULES_INTELLIJ_JAVA_ARTIFACTS,
-    generate_compat_repositories = True,
-    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
-    repositories = [ "https://repo.maven.apache.org/maven2/", ],
-)
-
-load("@maven//:compat.bzl", "compat_repositories")
-
-compat_repositories()
-
 
 ############################################
 # Gazelle, for generating bzl_library targets
