@@ -3,7 +3,8 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 load(
     "@rules_intellij//intellij:repositories.bzl", 
-    "RULES_INTELLIJ_JAVA_ARTIFACTS"
+    "RULES_INTELLIJ_JAVA_ARTIFACTS",
+    "RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS",
 )
 
 # Protobuf
@@ -33,14 +34,15 @@ def rules_intellij_deps_repositories():
     
     grpc_java_repositories()
 
+    overrides = {}
+    overrides.update(IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS)
+    overrides.update(RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS)
+
     maven_install(
         artifacts = IO_GRPC_GRPC_JAVA_ARTIFACTS + PROTOBUF_MAVEN_ARTIFACTS + RULES_INTELLIJ_JAVA_ARTIFACTS,
         generate_compat_repositories = True,
-        override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
-        repositories = [ 
-            "https://repo.maven.apache.org/maven2/",
-            "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2",
-        ],
+        override_targets = overrides,
+        repositories = [  "https://repo.maven.apache.org/maven2/", ],
         version_conflict_policy = "pinned",
     )
 

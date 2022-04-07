@@ -19,16 +19,36 @@ _RULES_JVM_EXTERNAL_SHA256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640
 
 _GRPC_JAVA_VERSION = "1.45.0"
 _GRPC_JAVA_SHA256 = "0a2aebd9b4980c3d555246a27d365349aa9327acf1bc3ed3b545c3cc9594f2e9"
-_GRPC_JAVA_URLS = [
-    "https://github.com/grpc/grpc-java/archive/refs/tags/v{version}.zip",
-]
 
 _RULES_KOTLIN_VERSION = "1.5.0"
 _RULES_KOTLIN_SHA256 = "12d22a3d9cbcf00f2e2d8f0683ba87d3823cb8c7f6837568dd7e48846e023307"
 
+_GRPC_KOTLIN_VERSION = "1.2.1"
+_GRPC_KOTLIN_SHA256 = "9d9b09a7dcc8cee1adf1e5c79a3b68d9a45e8b6f1e5b7f5a31b6410eea7d8ad0"
+
 RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "com.beust:jcommander:1.82",
+
+    "com.squareup:kotlinpoet:1.5.0",
+
+    "com.google.code.gson:gson:2.8.9",
+    "com.google.errorprone:error_prone_annotations:2.9.0",
+
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.5.2",
+
+    "org.jetbrains.kotlin:kotlin-stdlib-common:1.5.32",
+
+    "com.google.protobuf:protobuf-kotlin:%s" % _PROTOBUF_VERSION,
 ]
+
+RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
+    "org.jetbrains.kotlin:kotlin-stdlib": "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk7": "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8": "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
+    "org.jetbrains.kotlin:kotlin-script-runtime": "@com_github_jetbrains_kotlin//:kotlin-script-runtime",
+    "org.jetbrains.kotlin:kotlin-reflect": "@com_github_jetbrains_kotlin//:kotlin-reflect",
+}
 
 def rules_intellij_repositories():
     maybe(
@@ -94,8 +114,15 @@ def rules_intellij_repositories():
         name = "io_grpc_grpc_java",
         sha256 = _GRPC_JAVA_SHA256,
         strip_prefix = "grpc-java-%s" % _GRPC_JAVA_VERSION,
-        urls = [ x.format(version = _GRPC_JAVA_VERSION) for x in _GRPC_JAVA_URLS ],
-    )    
+        url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.zip" % _GRPC_JAVA_VERSION,
+    )
+    maybe(
+        http_archive,
+        name = "com_github_grpc_grpc_kotlin",
+        sha256 = _GRPC_KOTLIN_SHA256,
+        strip_prefix = "grpc-kotlin-%s" % _GRPC_KOTLIN_VERSION,
+        url = "https://github.com/grpc/grpc-kotlin/archive/refs/tags/v%s.zip" % _GRPC_KOTLIN_VERSION,
+    )
     http_file(
         name = "workers_proto",
         urls = ["https://raw.githubusercontent.com/bazelbuild/bazel/%s/src/main/protobuf/worker_protocol.proto" % _WORKER_PROTO_COMMIT ],

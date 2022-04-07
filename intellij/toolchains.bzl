@@ -1,42 +1,68 @@
 load("@maven//:compat.bzl", "compat_repositories")
 load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
-load("@rules_java//java:defs.bzl", "java_binary", "java_import")
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def rules_intellij_deps_toolchains():
     compat_repositories()
     kt_register_toolchains()
 
-def define_intellij():
-    java_import(
-        name = "libs",
-        jars = native.glob([ "lib/*.jar" ]),
-    )
+_JAVA_LIBS = """
+java_import(
+    name = "libs",
+    jars = glob([ 
+        "lib/*.jar", 
+    ], exclude = [
+        "lib/kotlin-*",
+    ]),
+    visibility = ["//visibility:public"],
+)
+"""
 
-    java_import(
-        name = "ant_libs",
-        jars = native.glob([ "lib/ant/lib/*.jar" ]),
-    )
+_KOTLIN_LIBS = """
+java_import(
+    name = "kotlin_libs",
+    jars = glob([ "lib/kotlin-*.jar", ]),
+    visibility = ["//visibility:public"],
+)
+"""
 
-    java_import(
-        name = "plugins",
-        jars = native.glob([ "plugins/**/*.jar" ]),
-    )
+_ANT_LIBS = """
+java_import(
+    name = "ant_libs",
+    jars = glob([ "lib/ant/lib/*.jar" ]),
+    visibility = ["//visibility:public"],
+)
+"""
 
-    java_binary(
-        name = "bin",
-        main_class = "com.intellij.idea.Main",
-        runtime_deps = [
-            ":libs",
-            ":ant_libs",
-            ":plugins",
-        ],
-        visibility = ["//visibility:public"],
-    )
+_PLUGIN_TPL = """
+java_import(
+    name = "{plugin}",
+    jars = glob([ "{plugin}/lib/*.jar" ]),
+    visibility = ["//visibility:public"],
+)
+"""
 
-_INTELLIJ_BUILD_CONTENT = """\
-load("@rules_intellij//intellij:toolchains.bzl", "define_intellij")
+_ALL_PLUGINS_TPL = """
+java_library(
+    name = "plugins",
+    runtime_deps = %s,
+    visibility = ["//visibility:public"],
+)
+"""
 
-define_intellij()
+_BIN = """
+java_binary(
+    name = "bin",
+    main_class = "com.intellij.idea.Main",
+    runtime_deps = [
+        ":libs",
+        ":kotlin_libs",
+        ":ant_libs",
+        ":plugins",
+    ],
+    visibility = ["//visibility:public"],
+)
 """
 
 def _intellij_impl(rctx):
@@ -48,6 +74,7 @@ def _intellij_impl(rctx):
         ),
         sha256 = rctx.attr.sha256,
     )
+
     for plugin, sha256 in rctx.attr.plugins.items():
         split_arr =  plugin.split(":", 2)
         id = split_arr[0]
@@ -75,9 +102,25 @@ def _intellij_impl(rctx):
         elif not rctx.path(plugin_dir).exists:
             fail("No such builtin plugin: %s" % id)
 
+    plugins = [ paths.basename(str(x)) for x in rctx.path("plugins").readdir() ]
+
+    rctx.file(
+        "plugins/BUILD.bazel",
+        content = "\n".join([ _PLUGIN_TPL.format(plugin = x) for x in plugins ]),
+    )
+
+    build_content = [
+        'load("@rules_java//java:defs.bzl", "java_binary", "java_import")',
+        _JAVA_LIBS,
+        _KOTLIN_LIBS,
+        _ANT_LIBS,
+        _ALL_PLUGINS_TPL % str([ "//plugins:%s" % x for x in plugins]),
+        _BIN,
+    ]
+
     rctx.file(
         "BUILD.bazel",
-        content = _INTELLIJ_BUILD_CONTENT,
+        content = "\n".join(build_content),
     )
 
 
