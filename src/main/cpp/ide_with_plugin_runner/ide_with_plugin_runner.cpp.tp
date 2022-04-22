@@ -1,0 +1,53 @@
+#include <cstdlib>
+
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <iterator>
+
+#include <unistd.h>
+
+std::string vec_to_str(const std::vector<std::string>& args) {
+    std::ostringstream imploded;
+
+    std::copy(
+        args.begin(), 
+        args.end(),
+        std::ostream_iterator<std::string>(imploded, " ")
+    );
+
+    return imploded.str();
+}
+
+int main(int argc, char *argv[]) {
+    char cur_dir[256];
+    getcwd(cur_dir, 256);
+
+    std::cout << ">>>>> Currend directory:" << std::endl << cur_dir << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+
+    std::vector<std::string> jvm_flags {
+        "-Didea.config.path=__config",
+        "-Didea.system.path=__system",
+        "-Didea.plugins.path={plugins_dir}",
+        "-Didea.platform.prefix=Idea",
+        "-Didea.initially.ask.config=false",
+    };
+
+    std::vector<std::string> args {
+        "external/{ide_repo}/bin",
+            "--jvm_flags=\"" + vec_to_str(jvm_flags) + "\"",
+    };
+
+    for (int i = 1; i < argc; ++i) {
+        args.push_back(argv[i]);
+    }
+
+    std::string cmd = vec_to_str(args);
+    std::cout << ">>>>> Running:" << std::endl << cmd << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+
+    return std::system(cmd.c_str());
+}

@@ -65,6 +65,17 @@ java_binary(
 )
 """
 
+_INFO = """
+INFO = struct(
+    bin = "{workspace_name}//:bin",
+    libs = "{workspace_name}//:libs",
+    kotlin_libs = "{workspace_name}//:kotlin_libs",
+    ant_libs = "{workspace_name}//:ant_libs",
+    all_plugins = "{workspace_name}//:plugins",
+    plugins = {plugins_map},
+)
+"""
+
 def _intellij_impl(rctx):
     rctx.download_and_extract(
         url = "{url}/com/jetbrains/intellij/idea/{type}/{version}/{type}-{version}.zip".format(
