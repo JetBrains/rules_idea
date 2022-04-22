@@ -1,0 +1,63 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_binary", "java_import")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@intellij_with_bazel//build_defs:build_defs.bzl", "intellij_plugin", "intellij_plugin_library")
+
+java_library(
+    name = "indexing_nolink_deps",
+    visibility = ["//visibility:private"],
+    neverlink = 1,
+    exports = [
+        "@idea_ultimate//:libs",
+        "@idea_ultimate//plugins:indexing-shared-ultimate",
+        "@idea_ultimate//plugins:indexing-shared",
+    ],
+)
+
+kt_jvm_library(
+    name = "indexing",
+    srcs = glob([
+        "*.kt",
+        "*.java",
+    ]),
+    deps = [
+        ":indexing_nolink_deps",
+
+        "//src/main/proto:indexing_mediator_java_proto",
+        "//src/main/proto:indexing_mediator_java_grpc_proto",
+
+        "//src/main/proto:indexing_mediator_kt_proto",
+        "//src/main/proto:indexing_mediator_kt_grpc_proto",
+
+        "@com_google_protobuf//:protobuf_java",
+        "@com_google_protobuf//:protobuf_java_util",
+
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//netty",
+        "@io_grpc_grpc_java//protobuf",
+        "@io_grpc_grpc_java//stub",
+
+        "@com_google_api_grpc_proto_google_common_protos//jar",
+        "@com_google_code_findbugs_jsr305//jar",
+        "@com_google_code_gson_gson//jar",
+        "@com_google_guava_guava//jar",
+    ],
+)
+
+java_binary(
+    name = "hui",
+    main_class = "xxx.Hui",
+    srcs = [ "Hui.java", ],
+    deps = [ ":indexing" ],
+)
+
+intellij_plugin_library(
+    name = "indexing_plugin_library",
+    deps = [":indexing"],
+)
+
+intellij_plugin(
+    name = "indexing_plugin",
+    plugin_xml = "//src/main/resources/META-INF:plugin.xml",
+    deps = [ ":indexing_plugin_library" ],
+)
+

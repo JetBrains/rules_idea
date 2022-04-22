@@ -1,3 +1,4 @@
+load("@rules_java//java:defs.bzl", "java_proto_library", "java_binary")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
@@ -24,8 +25,8 @@ java_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":worker_protocol_java_proto",
-        "//src/proto:indexing_mediator_java_grpc_proto",
-        "//src/proto:indexing_mediator_java_proto",
+        "//src/main/proto:indexing_mediator_java_grpc_proto",
+        "//src/main/proto:indexing_mediator_java_proto",
         "@com_beust_jcommander//jar",
         "@com_google_protobuf//:protobuf_java",
         "@com_google_protobuf//:protobuf_java_util",

@@ -82,7 +82,7 @@ indexing_aspect = aspect(
     attr_aspects = ["deps"],
     attrs = {
         "_worker": attr.label(
-            default = "@rules_intellij//src/java/rules_intellij/worker:indexing",
+            default = "@rules_intellij//src/main/java/rules_intellij/worker:indexing",
             executable = True,
             cfg = "exec",
         ),
@@ -95,7 +95,7 @@ debug_indexing_aspect = aspect(
     attr_aspects = ["deps"],
     attrs = {
         "_worker": attr.label(
-            default = "@rules_intellij//src/java/rules_intellij/worker:indexing",
+            default = "@rules_intellij//src/main/java/rules_intellij/worker:indexing",
             executable = True,
             cfg = "exec",
         ),
