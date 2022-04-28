@@ -1,6 +1,6 @@
 java_library(
     name = "baz",
-    deps = [],
+    deps = [ "//common" ],
     srcs = [ "Baz.java" ],
     visibility = ["//visibility:public"],
 )

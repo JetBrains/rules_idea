@@ -29,6 +29,9 @@ _GRPC_KOTLIN_SHA256 = "9d9b09a7dcc8cee1adf1e5c79a3b68d9a45e8b6f1e5b7f5a31b6410ee
 _RULES_CC_VERSION = "0.0.1"
 _RULES_CC_SHA256 = "4dccbfd22c0def164c8f47458bd50e0c7148f3d92002cdb459c2a96a68498241"
 
+_RULES_PKG_VERSION = "0.7.0"
+_RULES_PKG_SHA256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2"
+
 RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "io.grpc:grpc-netty-shaded:%s" % _GRPC_JAVA_VERSION,
 
@@ -135,6 +138,13 @@ def rules_intellij_repositories():
         name = "rules_cc",
         url = "https://github.com/bazelbuild/rules_cc/releases/download/{v}/rules_cc-{v}.tar.gz".format(v = _RULES_CC_VERSION),
         sha256 = _RULES_CC_SHA256,
+    )
+
+    maybe(
+        http_archive,
+        name = "rules_pkg",
+        url = "https://github.com/bazelbuild/rules_pkg/releases/download/{version}/rules_pkg-{version}.tar.gz".format(version = _RULES_PKG_VERSION),
+        sha256 = _RULES_PKG_SHA256,
     )
 
     http_file(

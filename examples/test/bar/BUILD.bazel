@@ -1,6 +1,6 @@
 java_library(
     name = "bar",
-    deps = [],
+    deps = [ "//common" ],
     srcs = [ "Bar.java" ],
     visibility = ["//visibility:public"],
 )

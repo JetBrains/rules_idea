@@ -30,7 +30,7 @@ intellij_project = rule(
 
 def setup_intellij_project(name, project_dir):
     intellij_project(
-        name = name + "_project",
+        name = "%s_toolchain" % name,
         project_dir = project_dir,
         project_files = native.glob([project_dir + "/**"]),
         visibility = ["//visibility:public"],
@@ -39,7 +39,7 @@ def setup_intellij_project(name, project_dir):
         name = name,
         exec_compatible_with = [],
         target_compatible_with = [],
-        toolchain = ":%s_project" % name,
+        toolchain = ":%s_toolchain" % name,
         toolchain_type = "@rules_intellij//intellij:intellij_project_toolchain_type",
         visibility = ["//visibility:public"],
     )

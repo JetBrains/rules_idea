@@ -1,38 +1,8 @@
-load("@rules_intellij//intellij:plugin.bzl", "wrap_plugin")
-
-wrap_plugin(
-    name = "indexing",
-    ide_repo = "idea_ultimate",
+filegroup(
+    name = "srcs",
     srcs = glob([
         "*.kt",
         "*.java",
     ]),
-    ide_plugins = [
-        "indexing-shared-ultimate",
-        "indexing-shared",
-    ],
-    deps = [
-        "//src/main/proto:indexing_mediator_java_proto",
-        "//src/main/proto:indexing_mediator_java_grpc_proto",
-
-        "//src/main/proto:indexing_mediator_kt_proto",
-        "//src/main/proto:indexing_mediator_kt_grpc_proto",
-
-        "@com_google_protobuf//:protobuf_java",
-        "@com_google_protobuf//:protobuf_java_util",
-
-        "@io_grpc_grpc_java//api",
-        "@io_grpc_grpc_java//netty",
-        "@io_grpc_grpc_java//protobuf",
-        "@io_grpc_grpc_java//stub",
-
-        "@com_google_api_grpc_proto_google_common_protos//jar",
-        "@com_google_code_findbugs_jsr305//jar",
-        "@com_google_code_gson_gson//jar",
-        "@com_google_guava_guava//jar",
-    ],
-    resources = [
-        "//src/main/resources/META-INF:plugin.xml",
-        "//src/main/resources/META-INF:pluginIcon.svg",
-    ],
+    visibility = ["//visibility:public"],
 )

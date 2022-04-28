@@ -26,6 +26,8 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
 def rules_intellij_deps_repositories():
     # For running our own unit tests
     bazel_skylib_workspace()
@@ -47,3 +49,5 @@ def rules_intellij_deps_repositories():
     )
 
     kotlin_repositories()
+
+    rules_pkg_dependencies()
