@@ -1,0 +1,46 @@
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_kotlinc_options")
+
+kt_kotlinc_options(
+    name = "options",
+    warn = "off",
+    #-Xuse-experimental=kotlin.Experimental
+)
+
+kt_jvm_library(
+    name = "lib",
+    srcs = glob(["*.kt"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/main/proto:worker_protocol_java_proto",
+        "//src/main/proto:worker_protocol_kt_proto",
+
+        "//src/main/proto:indexing_mediator_java_proto",
+        "//src/main/proto:indexing_mediator_java_grpc_proto",
+
+        "//src/main/proto:indexing_mediator_kt_proto",
+        "//src/main/proto:indexing_mediator_kt_grpc_proto",
+
+        "@com_beust_jcommander//jar",
+        "@com_google_protobuf//:protobuf_java",
+        "@com_google_protobuf//:protobuf_java_util",
+        "@io_grpc_grpc_java//api",
+        "@io_grpc_grpc_java//netty",
+        "@io_grpc_grpc_java//protobuf",
+        "@io_grpc_grpc_java//stub",
+        "@com_google_api_grpc_proto_google_common_protos//jar",
+        "@com_google_code_findbugs_jsr305//jar",
+        "@com_google_code_gson_gson//jar",
+        "@com_google_guava_guava//jar",
+
+        "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
+    ],
+    kotlinc_opts = ":options",
+)
+
+java_binary(
+    name = "worker",
+    main_class = "rules_intellij.worker.IndexingWorker",
+    visibility = ["//visibility:public"],
+    runtime_deps = [ ":lib", ],
+)

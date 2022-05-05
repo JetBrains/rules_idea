@@ -1,0 +1,60 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@io_grpc_grpc_java//:java_grpc_library.bzl", "java_grpc_library")
+load("@com_github_grpc_grpc_kotlin//:kt_jvm_grpc.bzl", "kt_jvm_grpc_library", "kt_jvm_proto_library")
+
+copy_file(
+    name = "worker_protocol_proto_file",
+    src = "@workers_proto//file",
+    out = "worker_protocol.proto",
+)
+
+proto_library(
+    name = "worker_protocol_proto",
+    srcs = [":worker_protocol_proto_file"],
+    visibility = ["//visibility:public"],
+)
+
+java_proto_library(
+    name = "worker_protocol_java_proto",
+    deps = [":worker_protocol_proto"],
+    visibility = ["//visibility:public"],
+)
+
+kt_jvm_proto_library(
+    name = "worker_protocol_kt_proto",
+    deps = [":worker_protocol_proto"],
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "indexing_mediator_proto",
+    srcs = ["persistent_indexing_mediator.proto"],
+)
+
+java_proto_library(
+    name = "indexing_mediator_java_proto",
+    deps = [":indexing_mediator_proto"],
+    visibility = ["//visibility:public"],
+)
+
+java_grpc_library(
+    name = "indexing_mediator_java_grpc_proto",
+    srcs = [":indexing_mediator_proto"],
+    deps = [":indexing_mediator_java_proto"],
+    visibility = ["//visibility:public"],
+)
+
+kt_jvm_proto_library(
+    name = "indexing_mediator_kt_proto",
+    deps = [":indexing_mediator_proto"],
+    visibility = ["//visibility:public"],
+)
+
+kt_jvm_grpc_library(
+    name = "indexing_mediator_kt_grpc_proto",
+    srcs = [":indexing_mediator_proto"],
+    deps = [":indexing_mediator_kt_proto" ],
+    visibility = ["//visibility:public"],
+)

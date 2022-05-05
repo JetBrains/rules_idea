@@ -1,0 +1,13 @@
+java_binary(
+    name = "bin",
+    deps = [
+        "//bar",
+        "//baz",
+        "//foo",
+    ],
+    srcs = [
+        "Main.java"
+    ],
+    main_class = "examples.test.bin.Main",
+    visibility = ["//visibility:public"],
+)

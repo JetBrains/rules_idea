@@ -1,0 +1,76 @@
+#include <cstdlib>
+
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <iterator>
+
+#include <unistd.h>
+
+//#include "tools/cpp/runfiles/runfiles.h"
+
+//using bazel::tools::cpp::runfiles::Runfiles;
+
+std::string get_working_path() {
+   char temp[256];
+   return (getcwd(temp, sizeof(temp)) ? std::string{temp} : std::string{});
+}
+
+std::string vec_to_str(const std::vector<std::string>& args) {
+    std::ostringstream imploded;
+
+    std::copy(
+        args.begin(), 
+        args.end(),
+        std::ostream_iterator<std::string>(imploded, " ")
+    );
+
+    return imploded.str();
+}
+
+int main(int argc, char *argv[], char **envp) {
+    std::string error;
+
+    /*std::unique_ptr<Runfiles> runfiles { Runfiles::Create(argv[0], &error) };
+    if (!runfiles) {
+        std::cout << "Create runfiles problem" << std::endl;
+        return 1;
+    }*/
+
+    std::cout << ">>>>> Currend directory:" << std::endl 
+              << get_working_path() << std::endl;
+
+    system("ls -la");
+
+    std::cout << ">>>>> Args:" << std::endl;
+    for (int i = 1; i < argc; ++i) {
+        std::cout << argv[i] << std::endl;
+    }
+    /*std::cout << ">>>>> Env:" << std::endl;
+    for (char **env = envp; *env != 0; env++) {
+        std::cout << *env << std::endl;
+    }*/
+
+    std::vector<std::string> jvm_flags {
+        "-Didea.config.path=__config",
+        "-Didea.system.path=__system",
+        "-Didea.plugins.path={plugins_dir}", // + runfiles->Rlocation("{plugins_dir}"),
+        {jvm_flags}
+    };
+
+    std::vector<std::string> args {
+        "{binary}",//runfiles->Rlocation("{binary}"),
+            "--jvm_flags=\"" + vec_to_str(jvm_flags) + "\"",
+    };
+
+    for (int i = 1; i < argc; ++i) {
+        args.push_back(argv[i]);
+    }
+
+    std::string cmd = vec_to_str(args);
+    std::cout << ">>>>> Running:" << std::endl << cmd << std::endl;
+
+    return std::system(cmd.c_str());
+}

@@ -1,0 +1,27 @@
+<idea-plugin>
+  <version>0.0.1</version>
+  <idea-version since-build="212" until-build="222.*" />
+  <id>rules_intellij.indexing</id>
+  <name>Shared Index Bazel Integration</name>
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+  <description><![CDATA[The plugin provides support for shared index generation and consuming for bazel-based projects.]]></description>
+  <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.all</depends>
+  <depends>intellij.indexing.shared</depends>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.sharedIndexLocalFinderBazel" interface="rules_intellij.indexing.SharedIndexLocalFinder" dynamic="true" />
+  </extensionPoints>
+  <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+    <sharedIndexLocalFinderBazel implementation="rules_intellij.indexing.PredefinedJsonSharedIndexLocalFinder" />
+    <sharedIndexDumpCommand implementation="rules_intellij.indexing.PersistentProjectIndexesGenerator" />
+    <requiredForSmartModeStartupActivity implementation="rules_intellij.indexing.OnDiskSharedIndexChunkLocator" />
+  </extensions>
+</idea-plugin>

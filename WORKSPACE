@@ -1,31 +1,13 @@
-# Declare the local Bazel workspace.
-workspace(
-    # If your ruleset is "official"
-    # (i.e. is in the bazelbuild GitHub org)
-    # then this should just be named "rules_idea"
-    # see https://docs.bazel.build/versions/main/skylark/deploying.html#workspace
-    name = "com_flare_rules_idea",
-)
+workspace(name = "rules_intellij")
 
-load(":internal_deps.bzl", "rules_idea_internal_deps")
+load("@rules_intellij//intellij:repositories.bzl", "rules_intellij_repositories")
+rules_intellij_repositories()
 
-# Fetch deps needed only locally for development
-rules_idea_internal_deps()
+load("@rules_intellij//intellij:deps_repositories.bzl", "rules_intellij_deps_repositories")
+rules_intellij_deps_repositories()
 
-load("//idea:repositories.bzl", "idea_register_toolchains", "rules_idea_dependencies")
-
-# Fetch dependencies which users need as well
-rules_idea_dependencies()
-
-idea_register_toolchains(
-    name = "idea1_14",
-    idea_version = "1.14.2",
-)
-
-# For running our own unit tests
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-
-bazel_skylib_workspace()
+load("@rules_intellij//intellij:toolchains.bzl", "rules_intellij_deps_toolchains")
+rules_intellij_deps_toolchains()
 
 ############################################
 # Gazelle, for generating bzl_library targets
@@ -37,3 +19,4 @@ go_rules_dependencies()
 go_register_toolchains(version = "1.17.2")
 
 gazelle_dependencies()
+

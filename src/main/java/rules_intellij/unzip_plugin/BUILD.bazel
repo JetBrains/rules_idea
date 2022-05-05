@@ -1,0 +1,8 @@
+load("@rules_java//java:defs.bzl", "java_binary")
+
+java_binary(
+    name = "unzip_plugin",
+    srcs = [ "UnzipPlugin.java" ],
+    main_class = "rules_intellij.unzip_plugin.UnzipPlugin",
+    visibility = ["//visibility:public"],
+)

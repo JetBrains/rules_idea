@@ -1,0 +1,9 @@
+toolchain_type(
+    name = "intellij_toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain_type(
+    name = "intellij_project_toolchain_type",
+    visibility = ["//visibility:public"],
+)
