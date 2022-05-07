@@ -25,14 +25,15 @@ def wrap_plugin(
     ide_repo, 
     srcs, 
     deps, 
-    resources = [], 
-    ide_plugins = []
+    resources = [],
+    ide_plugins = [],
 ):
     java_library(
         name = "%s_ide_deps" % name,
-        exports = 
-            [ "@%s//:libs" % ide_repo ] + 
-            [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
+        exports = [ 
+                "@%s//lib:api" % ide_repo, 
+                "@%s//lib:binary_libs" % ide_repo, 
+            ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
         neverlink = 1,
     )
     kt_jvm_library(

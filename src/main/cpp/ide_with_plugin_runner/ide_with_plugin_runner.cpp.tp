@@ -42,7 +42,7 @@ int main(int argc, char *argv[], char **envp) {
     std::cout << ">>>>> Currend directory:" << std::endl 
               << get_working_path() << std::endl;
 
-    system("ls -la");
+    //system("tree");
 
     std::cout << ">>>>> Args:" << std::endl;
     for (int i = 1; i < argc; ++i) {
@@ -53,17 +53,17 @@ int main(int argc, char *argv[], char **envp) {
         std::cout << *env << std::endl;
     }*/
 
-    std::vector<std::string> jvm_flags {
-        "-Didea.config.path=__config",
-        "-Didea.system.path=__system",
-        "-Didea.plugins.path={plugins_dir}", // + runfiles->Rlocation("{plugins_dir}"),
+    std::vector<std::string> args {
+        "{java}",
         {jvm_flags}
+        "-jar",
+        "{binary}"
     };
 
-    std::vector<std::string> args {
+    /*std::vector<std::string> args {
         "{binary}",//runfiles->Rlocation("{binary}"),
             "--jvm_flags=\"" + vec_to_str(jvm_flags) + "\"",
-    };
+    };*/
 
     for (int i = 1; i < argc; ++i) {
         args.push_back(argv[i]);

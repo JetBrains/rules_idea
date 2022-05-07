@@ -134,7 +134,7 @@ _indexing_aspect = aspect(
             cfg = "exec",
         ),
         "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
-        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
+        # "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
     },
     toolchains = [
         "@rules_intellij//intellij:intellij_project_toolchain_type",
@@ -171,24 +171,26 @@ _generate_indexes = rule(
 )
 
 def generate_indexes(name, deps):
-    # run_intellij(
-    #     name = "%s_run" % name, 
-    #     jvm_flags = [
-    #         "-Didea.platform.prefix=Idea",
-    #         "-Didea.initially.ask.config=false",
-    #         "-Didea.skip.indices.initialization=true",
-    #         "-Didea.force.dumb.queue.tasks=true",
-    #         "-Didea.suspend.indexes.initialization=true",
-    #         "-Dintellij.disable.shared.indexes=true",
-    #         "-Dshared.indexes.download=false",
-    #         "-Dintellij.hash.as.local.file.timestamp=true",
-    #         "-Didea.trust.all.projects=true",
-    #     ],
-    #     args = [
-    #         "dump-shared-index",
-    #         "persistent-project",
-    #     ],
-    # )
+    run_intellij(
+        name = "%s_run" % name, 
+        config_dir = "__%s_config" % name,
+        system_dir = "__%s_system_dir" % name,
+        jvm_props = {
+            "idea.platform.prefix": "Idea",
+            "idea.initially.ask.config": "false",
+            "idea.skip.indices.initialization": "true",
+            "idea.force.dumb.queue.tasks": "true",
+            "idea.suspend.indexes.initialization": "true",
+            "intellij.disable.shared.indexes": "true",
+            "shared.indexes.download": "false",
+            "intellij.hash.as.local.file.timestamp": "true",
+            "idea.trust.all.projects": "true",
+        },
+        args = [
+            "dump-shared-index",
+            "persistent-project",
+        ],
+    )
     _generate_indexes(
         name = name, 
         deps = deps,

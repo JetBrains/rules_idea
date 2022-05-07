@@ -2,30 +2,62 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 
+_HOME_PATH = "idea.home.path"
+_CONFIG_PATH = "idea.config.path"
+_SYSTEM_PATH = "idea.system.path"
+_PLUGINS_PATH = "idea.plugins.path"
+
+
 def _run_with_ide_src_impl(ctx):
     out = ctx.actions.declare_file("ide_with_plugin_runner.cpp")
 
     intellij = ctx.toolchains["@rules_intellij//intellij:intellij_toolchain_type"].intellij
+    java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:runtime_toolchain_type"].java_runtime
+    jvm_props = {} 
+    jvm_props.update(ctx.attr.jvm_props)
+
+    if not _HOME_PATH in jvm_props:
+        jvm_props[_HOME_PATH] = intellij.home_directory
+
+    if not _PLUGINS_PATH in jvm_props:
+        jvm_props[_PLUGINS_PATH] = intellij.plugins_directory
+
+    if _CONFIG_PATH in jvm_props and ctx.attr.config_dir:
+        fail("%s already in jvm_props, but also config_dir attribute specified" % _CONFIG_PATH)
+    elif ctx.attr.config_dir:
+        jvm_props[_CONFIG_PATH] = ctx.attr.config_dir
+
+    if _SYSTEM_PATH in jvm_props and ctx.attr.system_dir:
+        fail("%s already in jvm_props, but also system_dir attribute specified" % _SYSTEM_PATH)
+    elif ctx.attr.config_dir:
+        jvm_props[_SYSTEM_PATH] = ctx.attr.system_dir
 
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = out,
         substitutions = {
-            "{binary}": "external/idea_ultimate/binary", #intellij.binary.short_path,
-            "{plugins_dir}": "ide_plugins", #paths.dirname(intellij.plugins[0].short_path),
-            "{jvm_flags}": "\n".join(['"%s",' % x for x in ctx.attr.jvm_flags])
+            "{java}": java_runtime.java_executable_exec_path,
+            "{binary}": intellij.binary_path,
+            "{jvm_flags}": "\n".join(['"-D%s=%s",' % (k, v) for k,v in jvm_props.items()])
         },
     )
     return DefaultInfo(
         files = depset([out]),
-        runfiles = ctx.runfiles(files= intellij.plugins + [ intellij.binary ])
+        runfiles = ctx.runfiles(files =
+            [intellij.binary] 
+            + intellij.plugins 
+            + intellij.files 
+            + java_runtime.files.to_list()
+        )
     )
 
 
 _run_with_ide_src = rule(
     implementation = _run_with_ide_src_impl,
     attrs = {
-        "jvm_flags": attr.string_list(),
+        "config_dir": attr.string(),
+        "system_dir": attr.string(),
+        "jvm_props": attr.string_dict(),
         "_template": attr.label(
             default = "@rules_intellij//src/main/cpp/ide_with_plugin_runner:ide_with_plugin_runner.cpp.tp",
             allow_single_file = True,
@@ -33,21 +65,24 @@ _run_with_ide_src = rule(
     },
     toolchains = [
         "@rules_intellij//intellij:intellij_toolchain_type",
+        "@bazel_tools//tools/jdk:runtime_toolchain_type",
     ],
 )
 
 
-def run_intellij(name, jvm_flags, args):
-   _run_with_ide_src(
-       name = "_%s_run_src" % name,
-       jvm_flags = jvm_flags,
-   )
-   cc_binary(
-       name = name,
-       args = args,
-       srcs = [ ":_%s_run_src" % name ],
-       data = [ "@idea_ultimate//:binary", ],
-       deps = [ "@bazel_tools//tools/cpp/runfiles"],
-       tags = [ "local" ],
-       visibility = ["//visibility:public"],
-   )
+def run_intellij(name, jvm_props, args, config_dir = None, system_dir = None):
+    _run_with_ide_src(
+        name = "_%s_run_src" % name,
+        config_dir = config_dir,
+        system_dir = system_dir,
+        jvm_props = jvm_props,
+    )
+    cc_binary(
+        name = name,
+        args = args,
+        srcs = [ ":_%s_run_src" % name ],
+        data = [ ":_%s_run_src" % name, ],
+        deps = [ "@bazel_tools//tools/cpp/runfiles"],
+        tags = [ "local" ],
+        visibility = ["//visibility:public"],
+    )
