@@ -61,6 +61,7 @@ filegroup(
 
 _ROOT = """\
 load("@rules_java//java:defs.bzl", "java_binary")
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 
 filegroup(
     name = "runfiles",

@@ -28,6 +28,9 @@ def inject_indexing(name, ide_repo):
             "@com_google_code_findbugs_jsr305//jar",
             "@com_google_code_gson_gson//jar",
             "@com_google_guava_guava//jar",
+
+            "@io_netty_netty_transport_native_epoll//jar",
+            "@io_netty_netty_transport_native_kqueue//jar",
         ],
         resources = [
             "@rules_intellij//src/main/resources/META-INF:plugin.xml",

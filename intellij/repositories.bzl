@@ -35,6 +35,9 @@ _RULES_PKG_SHA256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558
 RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "io.grpc:grpc-netty-shaded:%s" % _GRPC_JAVA_VERSION,
 
+    "io.netty:netty-transport-native-epoll:4.1.77.Final",
+    "io.netty:netty-transport-native-kqueue:4.1.77.Final",
+
     "com.beust:jcommander:1.82",
 
     "com.squareup:kotlinpoet:1.5.0",

@@ -1,10 +1,6 @@
 ### How to test:
 
-In one terminal, run:
-
-    cd gradleproject && ./gradlew runIde --args='dump-shared-index persistent-project'
-
-In second terminal, run:
+Run:
 
     cd examples/test && ./run_indexing.sh
 

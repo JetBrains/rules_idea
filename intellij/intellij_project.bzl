@@ -26,6 +26,7 @@ intellij_project = rule(
             allow_files = True,
         ),
     },
+    provides = [ platform_common.ToolchainInfo ],
 )
 
 def setup_intellij_project(name, project_dir):

@@ -25,6 +25,12 @@ open class IndexingWorkerArgs {
     @Parameter(names = ["--name"])
     var name: String? = null
 
+    @Parameter(names = ["--java_binary"])
+    var javaBinary: String? = null
+
+    @Parameter(names = ["--ide_home_dir"])
+    var ideHomeDir: String? = null
+
     @Parameter(names = ["--ide_binary"])
     var ideBinary: String? = null
 
@@ -33,7 +39,6 @@ open class IndexingWorkerArgs {
 
     @Parameter(names = ["-s"])
     var sources: List<String> = ArrayList()
-    fun endpoint() = debugEndpoint ?:  "0.0.0.0:9000"
 
     fun parseArgs(args: Array<String>) {
         JCommander

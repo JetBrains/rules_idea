@@ -82,7 +82,6 @@ def run_intellij(name, jvm_props, args, config_dir = None, system_dir = None):
         args = args,
         srcs = [ ":_%s_run_src" % name ],
         data = [ ":_%s_run_src" % name, ],
-        deps = [ "@bazel_tools//tools/cpp/runfiles"],
         tags = [ "local" ],
         visibility = ["//visibility:public"],
     )

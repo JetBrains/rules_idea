@@ -44,8 +44,8 @@ intellij_toolchain = rule(
             doc = "Runfiles for intellij",
             allow_files = True,
         ),
-
     },
+    provides = [ platform_common.ToolchainInfo ],
 )
 
 
