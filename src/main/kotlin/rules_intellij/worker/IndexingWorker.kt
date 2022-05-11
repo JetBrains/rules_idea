@@ -26,14 +26,15 @@ object IndexingWorker {
             val ioScope = CoroutineScope(Dispatchers.IO)
             val client = createIntellijIndexingClient(startupArgs, logger).getOrThrow()
 
+            val projectId = client.start().getOrThrow()
+            logger.log("PROJECT ID", projectId)
+
             while (true) {
                 val request = WorkRequest.parseDelimitedFrom(System.`in`)
                     ?: break
 
                 ioScope.launch {
                     logger.log("WorkRequest", request)
-                    val projectId = client.start().getOrThrow()
-                    logger.log("PROJECT ID", projectId)
                     try {
                         processWorkRequest(client, projectId, request)
                             .also { logger.log("WorkResponse", it) }
