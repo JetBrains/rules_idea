@@ -1,7 +1,7 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_intellij//intellij:intellij_project.bzl", "IntellijProject")
 load("@rules_intellij//intellij:intellij_toolchain.bzl", "Intellij")
-load("@rules_intellij//intellij:run_intellij.bzl", "run_intellij")
+#load("@rules_intellij//intellij:run_intellij.bzl", "run_intellij")
 
 IntellijIndexInfo = provider(
     doc = "Information about intellij target indexes",
@@ -25,7 +25,7 @@ IntellijTransitiveIndexInfo = provider(
 def _map_path(x):
     return x.path
 
-def _run_indexing(ctx, intellij, intellij_project, inputs):
+def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
     out_ijx = ctx.actions.declare_file("%s.ijx" % ctx.rule.attr.name)
     out_meta = ctx.actions.declare_file("%s.ijx.metadata.json" % ctx.rule.attr.name)
     out_sha256 = ctx.actions.declare_file("%s.ijx.sha256" % ctx.rule.attr.name)
@@ -40,8 +40,11 @@ def _run_indexing(ctx, intellij, intellij_project, inputs):
     if hasattr(ctx.attr, "_debug_endpoint"):
         args.add_all("--debug_endpoint", [ ctx.attr._debug_endpoint ])
     else:
+        args.add_all("--java_binary", [ java_runtime.java_executable_exec_path ])
+        tools += java_runtime.files.to_list()
+        args.add_all("--ide_home_dir", [ intellij.home_directory ])
         args.add_all("--ide_binary", [ intellij.binary.path ])
-        tools.append(intellij.binary)
+        tools += intellij.files + [ intellij.binary ]
         args.add_all("--plugins_directory", [ paths.dirname(intellij.plugins[0].path) ])
         more_inputs += intellij.plugins
 
@@ -107,6 +110,7 @@ def _indexing_aspect_impl(target, ctx):
         ctx = ctx,
         intellij = ctx.toolchains["@rules_intellij//intellij:intellij_toolchain_type"].intellij,
         intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project,
+        java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:runtime_toolchain_type"].java_runtime,
         inputs = _collect_sources_to_index(ctx),
     )
     return [
@@ -134,11 +138,12 @@ _indexing_aspect = aspect(
             cfg = "exec",
         ),
         "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
-        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
+#        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
     },
     toolchains = [
         "@rules_intellij//intellij:intellij_project_toolchain_type",
         "@rules_intellij//intellij:intellij_toolchain_type",
+        "@bazel_tools//tools/jdk:runtime_toolchain_type",
     ],
 )
 
@@ -171,24 +176,26 @@ _generate_indexes = rule(
 )
 
 def generate_indexes(name, deps):
-    # run_intellij(
-    #     name = "%s_run" % name, 
-    #     jvm_flags = [
-    #         "-Didea.platform.prefix=Idea",
-    #         "-Didea.initially.ask.config=false",
-    #         "-Didea.skip.indices.initialization=true",
-    #         "-Didea.force.dumb.queue.tasks=true",
-    #         "-Didea.suspend.indexes.initialization=true",
-    #         "-Dintellij.disable.shared.indexes=true",
-    #         "-Dshared.indexes.download=false",
-    #         "-Dintellij.hash.as.local.file.timestamp=true",
-    #         "-Didea.trust.all.projects=true",
-    #     ],
-    #     args = [
-    #         "dump-shared-index",
-    #         "persistent-project",
-    #     ],
-    # )
+#    run_intellij(
+#        name = "%s_run" % name,
+#        config_dir = "__%s_config" % name,
+#        system_dir = "__%s_system_dir" % name,
+#        jvm_props = {
+#            "idea.platform.prefix": "Idea",
+#            "idea.initially.ask.config": "false",
+#            "idea.skip.indices.initialization": "true",
+#            "idea.force.dumb.queue.tasks": "true",
+#            "idea.suspend.indexes.initialization": "true",
+#            "intellij.disable.shared.indexes": "true",
+#            "shared.indexes.download": "false",
+#            "intellij.hash.as.local.file.timestamp": "true",
+#            "idea.trust.all.projects": "true",
+#        },
+#        args = [
+#            "dump-shared-index",
+#            "persistent-project",
+#        ],
+#    )
     _generate_indexes(
         name = name, 
         deps = deps,

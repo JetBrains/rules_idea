@@ -1,34 +1,6 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-_JAVA_LIBS = """
-java_import(
-    name = "libs",
-    jars = glob([
-        "lib/*.jar",
-    ], exclude = [
-        "lib/kotlin-*",
-    ]),
-    visibility = ["//visibility:public"],
-)
-"""
-
-_KOTLIN_LIBS = """
-java_import(
-    name = "kotlin_libs",
-    jars = glob([ "lib/kotlin-*.jar", ]),
-    visibility = ["//visibility:public"],
-)
-"""
-
-_ANT_LIBS = """
-java_import(
-    name = "ant_libs",
-    jars = glob([ "lib/ant/lib/*.jar" ]),
-    visibility = ["//visibility:public"],
-)
-"""
-
-_PLUGIN_TPL = """
+_PLUGIN_TPL = """\
 java_import(
     name = "{plugin}",
     jars = glob([ "{plugin}/lib/*.jar" ]),
@@ -36,27 +8,78 @@ java_import(
 )
 """
 
-_ALL_PLUGINS_TPL = """
-java_library(
+_ALL_PLUGINS = """\
+filegroup(
     name = "plugins",
-    runtime_deps = %s,
+    srcs = glob([
+        "**/*.jar",
+    ]),
     visibility = ["//visibility:public"],
 )
 """
 
-_BIN = """
-java_binary(
-    name = "binary",
-    main_class = "com.intellij.idea.Main",
-    runtime_deps = [
-        ":libs",
-        ":kotlin_libs",
-        ":ant_libs",
-        ":plugins",
-    ],
+_LIBS = """\
+load("@rules_java//java:defs.bzl", "java_import")
+
+java_import(
+    name = "binary_libs",
+    jars = glob([
+        "tools.jar",
+        "3rd-party-rt.jar",
+        "util.jar",
+        "jna.jar",
+        "jdom.jar",
+        "log4j.jar",
+        "bootstrap.jar",
+        "extensions.jar",
+        "trove4j.jar",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+java_import(
+    name = "api",
+    jars = glob([
+        "openapi.jar",
+        "platform-api.jar",
+        "dom-openapi.jar",
+        "jsp-base-openapi.jar",
+        "rt/xml-apis.jar",
+        "platform-impl.jar",
+        "3rd-party.jar",
+        "stats.jar",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "runfiles",
+    srcs = glob([ "**" ], exclude = [ "src/**" ]),
     visibility = ["//visibility:public"],
 )
 """
+
+_ROOT = """\
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+
+filegroup(
+    name = "runfiles",
+    srcs = glob([
+        "bin/**",
+        "Resources/**"
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+java_binary(
+    name = "binary",
+    main_class = "com.intellij.idea.Main",
+    runtime_deps = [ "//lib:binary_libs" ],
+    visibility = ["//visibility:public"],
+)
+"""
+
 
 def _intellij_impl(rctx):
     rctx.download_and_extract(
@@ -99,21 +122,21 @@ def _intellij_impl(rctx):
 
     rctx.file(
         "plugins/BUILD.bazel",
-        content = "\n".join([ _PLUGIN_TPL.format(plugin = x) for x in plugins ]),
+        content = "\n".join([
+                'load("@rules_java//java:defs.bzl", "java_import")',
+                _ALL_PLUGINS,
+            ] + [ _PLUGIN_TPL.format(plugin = x) for x in plugins ]
+        ),
     )
 
-    build_content = [
-        'load("@rules_java//java:defs.bzl", "java_binary", "java_import")',
-        _JAVA_LIBS,
-        _KOTLIN_LIBS,
-        _ANT_LIBS,
-        _ALL_PLUGINS_TPL % str([ "//plugins:%s" % x for x in plugins]),
-        _BIN,
-    ]
+    rctx.file(
+        "lib/BUILD.bazel",
+        content = _LIBS,
+    )
 
     rctx.file(
         "BUILD.bazel",
-        content = "\n".join(build_content),
+        content = _ROOT,
     )
 
     rctx.file(
@@ -123,6 +146,7 @@ def _intellij_impl(rctx):
             'inject_indexing(name = "indexing", ide_repo = "%s")' % rctx.attr.name,
         ])
     )
+
 
 intellij = repository_rule(
     implementation = _intellij_impl,

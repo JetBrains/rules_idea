@@ -1,4 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:defs.bzl", "java_library", "java_binary")
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
@@ -25,21 +25,38 @@ def wrap_plugin(
     ide_repo, 
     srcs, 
     deps, 
-    resources = [], 
-    ide_plugins = []
+    resources = [],
+    ide_plugins = [],
 ):
     java_library(
         name = "%s_ide_deps" % name,
-        exports = 
-            [ "@%s//:libs" % ide_repo ] + 
-            [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
+        exports = [ 
+                "@%s//lib:api" % ide_repo, 
+                "@%s//lib:binary_libs" % ide_repo, 
+            ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
         neverlink = 1,
     )
     kt_jvm_library(
         name = "%s_lib" % name,
         srcs = srcs,
-        deps = deps + [ "%s_ide_deps" % name, ],
+        deps = deps + [ 
+            "%s_ide_deps" % name, 
+            "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+            "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
+            "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
+        ],
         resources = resources,
+        visibility = ["//visibility:public"],
+    )
+    java_binary(
+        name = "%s_bin" % name,
+        main_class = "__DUMMY",
+        runtime_deps = [ "%s_lib" % name, ],
+    )
+    pkg_zip(
+        name = name,
+        srcs = [  "%s_bin_deploy.jar" % name, ],
+        package_dir = "%s/lib" % name,
         visibility = ["//visibility:public"],
     )
     _collect_plugin_jars(
@@ -47,8 +64,8 @@ def wrap_plugin(
         src =  "%s_lib" % name,
     )
     pkg_zip(
-        name = name,
-        srcs = [ "%s_plugin_jars" % name ],
+        name = "%s_not_single_jar" % name,
+        srcs = [  "%s_plugin_jars" % name, ],
         package_dir = "%s/lib" % name,
         visibility = ["//visibility:public"],
     )

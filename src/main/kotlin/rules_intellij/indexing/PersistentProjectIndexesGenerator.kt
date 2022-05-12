@@ -12,9 +12,19 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.util.indexing.roots.IndexableFilesIterator
 import com.intellij.util.indexing.roots.kind.IndexableSetOrigin
+import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 import io.grpc.Status
 import io.grpc.StatusException
+
+import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollServerDomainSocketChannel
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.kqueue.KQueue
+import io.netty.channel.kqueue.KQueueServerDomainSocketChannel
+import io.netty.channel.kqueue.KQueueEventLoopGroup
+import io.netty.channel.unix.DomainSocketAddress
+
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -23,6 +33,11 @@ class PersistentProjectArgs(parser: ArgsParser) {
     "port",
     "port to listen on"
   ).int { 9000 }
+
+  val domainSocket by parser.arg(
+    "socket",
+    "unix domain socket to listen on",
+  ).stringOrNull()
 }
 
 fun StartupRequest.toOpenProjectArgs(): OpenProjectArgs {
@@ -77,6 +92,13 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
 
   override fun parseArgs(parser: ArgsParser): PersistentProjectArgs = PersistentProjectArgs(parser)
 
+  fun run(server: Server, descr: String) {
+    server.start()
+    ConsoleLog.info("Indexing Server started: " + descr)
+    server.awaitTermination()
+    ConsoleLog.info("Indexing Server shutdown")
+  }
+
   override fun executeCommand(args: PersistentProjectArgs, indicator: ProgressIndicator) {
     System.setProperty("idea.skip.indices.initialization", "true")
     System.setProperty("idea.force.dumb.queue.tasks", "true")
@@ -86,14 +108,27 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
     System.setProperty("intellij.hash.as.local.file.timestamp", true.toString())
     System.setProperty("idea.trust.all.projects", true.toString())
 
-    val server = NettyServerBuilder
-      .forPort(args.port)
-      .addService(IndexingService(indicator, args))
-      .build()
-
-    server.start()
-    ConsoleLog.info("Indexing Server started, listening on ${args.port}")
-    server.awaitTermination()
-    ConsoleLog.info("Indexing Server shutdown")
+    if (args.domainSocket == null) {
+      run(NettyServerBuilder
+        .forPort(args.port)
+        .addService(IndexingService(indicator, args))
+        .build(), "${args.port}")
+    } else if (Epoll.isAvailable()) {
+      run(NettyServerBuilder
+        .forAddress(DomainSocketAddress(args.domainSocket!!))
+        .bossEventLoopGroup(EpollEventLoopGroup(1))
+        .workerEventLoopGroup(EpollEventLoopGroup(4))
+        .channelType(EpollServerDomainSocketChannel::class.java)
+        .build(), args.domainSocket!!)
+    } else if (KQueue.isAvailable()) {
+      run(NettyServerBuilder
+        .forAddress(DomainSocketAddress(args.domainSocket!!))
+        .bossEventLoopGroup(KQueueEventLoopGroup(1))
+        .workerEventLoopGroup(KQueueEventLoopGroup(4))
+        .channelType(KQueueServerDomainSocketChannel::class.java)
+        .build(), args.domainSocket!!)
+    } else {
+      throw RuntimeException("Unsupported OS '" + System.getProperty("os.name") + "', only Unix and Mac are supported")
+    }
   }
 }
