@@ -1,13 +1,6 @@
 package rules_intellij.worker
 
-//import io.grpc.netty.NettyChannelBuilder;
-//import io.netty.channel.epoll.Epoll
-//import io.netty.channel.epoll.EpollDomainSocketChannel
-//import io.netty.channel.epoll.EpollEventLoopGroup;
-//import io.netty.channel.kqueue.KQueue
-//import io.netty.channel.kqueue.KQueueDomainSocketChannel
-//import io.netty.channel.kqueue.KQueueEventLoopGroup
-//import io.netty.channel.unix.DomainSocketAddress
+import rules_intellij.domain_socket.NettyDomainSocketChannelBuilder
 
 import com.intellij.indexing.shared.ultimate.persistent.rpc.DaemonGrpcKt.DaemonCoroutineStub
 import com.intellij.indexing.shared.ultimate.persistent.rpc.IndexRequest
@@ -17,10 +10,7 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import java.io.File
 import java.io.*
-import java.nio.channels.FileChannel
-import java.nio.channels.OverlappingFileLockException
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -91,36 +81,29 @@ class IntellijIndexingClientStarterArgs(
     val ideRunner: String,
     val pluginsDir: String,
 ): IntellijIndexingClientArgs {
-    val dir: Path = createTempDirectory()
-    val port = 9000 + (0..999).random()
-//    val socket = dir.resolve("intellij.socket")
+
+    companion object {
+        fun getRandomString(length: Int) : String {
+            val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+            return (1..length)
+                .map { allowedChars.random() }
+                .joinToString("")
+        }
+    }
+
+    val dir: Path = createTempDirectory().resolve(getRandomString(10))
+    val socket = dir.resolve("intellij.socket")
 
     override val channel: ManagedChannel
-        get() = ManagedChannelBuilder.forTarget("0.0.0.0:$port")
-            .usePlaintext()
+        get() = NettyDomainSocketChannelBuilder
+            .forDomainSocket(socket.toAbsolutePath().toString())
+            .usePlainText()
             .build()
-//        get() {
-//            if (Epoll.isAvailable()) {
-//                return NettyChannelBuilder
-//                    .forAddress(DomainSocketAddress(socket.toAbsolutePath().toString()))
-//                    .eventLoopGroup(EpollEventLoopGroup())
-//                    .channelType(EpollDomainSocketChannel::class.java)
-//                    .build()
-//            } else if (KQueue.isAvailable()) {
-//                return NettyChannelBuilder
-//                    .forAddress(DomainSocketAddress(socket.toAbsolutePath().toString()))
-//                    .eventLoopGroup(KQueueEventLoopGroup())
-//                    .channelType(KQueueDomainSocketChannel::class.java)
-//                    .build()
-//            }
-//            throw RuntimeException("Unsupported OS '" + System.getProperty("os.name") + "', only Unix and Mac are supported")
-//        }
 }
 
 class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): IntellijIndexingClient(args) {
     private val dir = args.dir
-//    private val socket = args.socket
-    private val port = args.port
+    private val socket = args.socket
     private val javaBin = args.javaBin
     private val ideHomeDir = args.ideHomeDir
     private val ideRunner = args.ideRunner
@@ -211,7 +194,7 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
                 ideRunner,
                 "dump-shared-index",
                 "persistent-project",
-                "--port=$port",
+                "--socket=$socket",
             )
         ).flatten()
 
@@ -231,6 +214,7 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
         Runtime.getRuntime().addShutdownHook(Thread {
             process.toHandle().descendants().forEach { it.destroyForcibly() }
             process.destroyForcibly()
+            dir.toFile().deleteRecursively()
         })
 
         logStream("INTELLIJ STDOUT", process.inputStream)
@@ -250,10 +234,10 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
         }
 
         var result: Result<Long>? = null
-        for (i in 0..10) {
+        for (i in 0..20) {
             delay(1000)
             result = startInternal()
-            if (result.isSuccess || i == 9) {
+            if (result.isSuccess || i == 19) {
                 break
             }
         }

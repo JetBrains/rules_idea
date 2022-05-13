@@ -21,6 +21,8 @@ kt_jvm_library(
         "//src/main/proto:indexing_mediator_kt_proto",
         "//src/main/proto:indexing_mediator_kt_grpc_proto",
 
+        "//src/main/kotlin/rules_intellij/domain_socket",
+
         "@com_beust_jcommander//jar",
         "@com_google_protobuf//:protobuf_java",
         "@com_google_protobuf//:protobuf_java_util",

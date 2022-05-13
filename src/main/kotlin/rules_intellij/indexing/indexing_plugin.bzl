@@ -16,6 +16,8 @@ def inject_indexing(name, ide_repo):
             "@rules_intellij//src/main/proto:indexing_mediator_kt_proto",
             "@rules_intellij//src/main/proto:indexing_mediator_kt_grpc_proto",
 
+            "@rules_intellij//src/main/kotlin/rules_intellij/domain_socket",
+
             "@com_google_protobuf//:protobuf_java",
             "@com_google_protobuf//:protobuf_java_util",
 
