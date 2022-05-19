@@ -32,11 +32,14 @@ _RULES_CC_SHA256 = "4dccbfd22c0def164c8f47458bd50e0c7148f3d92002cdb459c2a96a6849
 _RULES_PKG_VERSION = "0.7.0"
 _RULES_PKG_SHA256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2"
 
+_NETTY_VERSION = "4.1.72.Final"
+
 RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "io.grpc:grpc-netty-shaded:%s" % _GRPC_JAVA_VERSION,
 
-    "io.netty:netty-transport-native-epoll:4.1.77.Final",
-    "io.netty:netty-transport-native-kqueue:4.1.77.Final",
+    "io.netty:netty-transport-native-unix-common:%s" % _NETTY_VERSION,
+    "io.netty:netty-transport-native-epoll:%s" % _NETTY_VERSION,
+    "io.netty:netty-transport-native-kqueue:%s" % _NETTY_VERSION,
 
     "com.beust:jcommander:1.82",
 

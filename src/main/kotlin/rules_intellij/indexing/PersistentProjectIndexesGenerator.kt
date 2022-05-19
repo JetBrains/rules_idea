@@ -1,5 +1,7 @@
 package rules_intellij.indexing
 
+import rules_intellij.domain_socket.NettyDomainSocketServerBuilder
+
 import com.intellij.indexing.shared.generator.*
 import com.intellij.indexing.shared.ultimate.persistent.rpc.*
 import com.intellij.indexing.shared.ultimate.project.ProjectSharedIndexes
@@ -16,14 +18,6 @@ import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 import io.grpc.Status
 import io.grpc.StatusException
-
-import io.netty.channel.epoll.Epoll
-import io.netty.channel.epoll.EpollServerDomainSocketChannel
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.kqueue.KQueue
-import io.netty.channel.kqueue.KQueueServerDomainSocketChannel
-import io.netty.channel.kqueue.KQueueEventLoopGroup
-import io.netty.channel.unix.DomainSocketAddress
 
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -92,9 +86,9 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
 
   override fun parseArgs(parser: ArgsParser): PersistentProjectArgs = PersistentProjectArgs(parser)
 
-  fun run(server: Server, descr: String) {
+  private fun run(server: Server, description: String) {
     server.start()
-    ConsoleLog.info("Indexing Server started: " + descr)
+    ConsoleLog.info("Indexing Server started: $description")
     server.awaitTermination()
     ConsoleLog.info("Indexing Server shutdown")
   }
@@ -113,22 +107,12 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
         .forPort(args.port)
         .addService(IndexingService(indicator, args))
         .build(), "${args.port}")
-    } else if (Epoll.isAvailable()) {
-      run(NettyServerBuilder
-        .forAddress(DomainSocketAddress(args.domainSocket!!))
-        .bossEventLoopGroup(EpollEventLoopGroup(1))
-        .workerEventLoopGroup(EpollEventLoopGroup(4))
-        .channelType(EpollServerDomainSocketChannel::class.java)
-        .build(), args.domainSocket!!)
-    } else if (KQueue.isAvailable()) {
-      run(NettyServerBuilder
-        .forAddress(DomainSocketAddress(args.domainSocket!!))
-        .bossEventLoopGroup(KQueueEventLoopGroup(1))
-        .workerEventLoopGroup(KQueueEventLoopGroup(4))
-        .channelType(KQueueServerDomainSocketChannel::class.java)
-        .build(), args.domainSocket!!)
     } else {
-      throw RuntimeException("Unsupported OS '" + System.getProperty("os.name") + "', only Unix and Mac are supported")
+      run(NettyDomainSocketServerBuilder
+        .forDomainSocket(args.domainSocket!!)
+        .eventGroups(1, 4)
+        .addService(IndexingService(indicator, args))
+        .build(), args.domainSocket!!)
     }
   }
 }

@@ -31,14 +31,17 @@ def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
     out_sha256 = ctx.actions.declare_file("%s.ijx.sha256" % ctx.rule.attr.name)
     outputs = [out_ijx, out_meta, out_sha256]
 
+    env = {}
     args = ctx.actions.args()
     if hasattr(ctx.attr, "_debug_log"):
-        args.add_all("--debug_log", [ ctx.attr._debug_log ])
+        env["INTELLIJ_WORKER_DEBUG"] = ctx.attr._debug_log
 
     tools = []
     more_inputs = []
     if hasattr(ctx.attr, "_debug_endpoint"):
         args.add_all("--debug_endpoint", [ ctx.attr._debug_endpoint ])
+    elif hasattr(ctx.attr, "_debug_domain_socket"):
+        args.add_all("--debug_domain_socket", [ ctx.attr._debug_domain_socket ])
     else:
         args.add_all("--java_binary", [ java_runtime.java_executable_exec_path ])
         tools += java_runtime.files.to_list()
@@ -66,6 +69,7 @@ def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
         tools = tools,
         inputs = inputs + more_inputs + [ worker_arg_file ] + intellij_project.project_files,
         outputs = outputs,
+        env = env,
         execution_requirements = {
             "worker-key-mnemonic": "IntellijIndexing",
             "supports-workers": "1",
@@ -137,7 +141,8 @@ _indexing_aspect = aspect(
             executable = True,
             cfg = "exec",
         ),
-        "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
+#        "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
+#        "_debug_domain_socket": attr.string(default = "/tmp/test.sock"),
 #        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
     },
     toolchains = [

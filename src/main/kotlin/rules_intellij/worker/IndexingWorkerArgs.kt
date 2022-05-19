@@ -13,6 +13,9 @@ open class IndexingWorkerArgs {
     @Parameter(names = ["--debug_endpoint"])
     var debugEndpoint: String? = null
 
+    @Parameter(names = ["--debug_domain_socket"])
+    var debugDomainSocket: String? = null
+
     @Parameter(names = ["--project_dir"])
     var projectDir: String? = null
 

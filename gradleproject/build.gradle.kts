@@ -1,5 +1,7 @@
 import com.google.protobuf.gradle.*
 import org.jetbrains.intellij.tasks.RunIdeTask
+import org.gradle.internal.os.OperatingSystem
+import kotlin.collections.setOf
 
 plugins {
     id("java")
@@ -14,6 +16,7 @@ val grpcVersion = "1.31.1"
 val grpcKotlinVersion = "0.2.0" // CURRENT_GRPC_KOTLIN_VERSION
 val protobufVersion = "3.15.8"
 val coroutinesVersion = "1.3.8"
+val nettyVersion = "4.1.72.Final"
 
 repositories {
     mavenCentral()
@@ -27,6 +30,26 @@ dependencies {
     implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     runtimeOnly("io.grpc:grpc-netty:$grpcVersion")
+
+    implementation("io.netty:netty-transport-native-epoll:$nettyVersion")
+    implementation("io.netty:netty-transport-native-kqueue:$nettyVersion")
+
+    val arch = System.getProperty("os.arch")
+    val is86_64 = setOf("x86_64", "amd64", "x64", "x86-64").contains(arch)
+    val isArm64 = arch == "arm64"
+    if (OperatingSystem.current().isLinux) {
+        if (is86_64) {
+            implementation("io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64")
+        } else if (isArm64) {
+            implementation("io.netty:netty-transport-native-epoll:$nettyVersion:linux-aarch_64")
+        }
+    } else if (OperatingSystem.current().isMacOsX) {
+        if (is86_64) {
+            implementation("io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64")
+        } else if (isArm64) {
+            implementation("io.netty:netty-transport-native-kqueue:$nettyVersion:osx-aarch_64")
+        }
+    }
 }
 
 protobuf {
@@ -58,6 +81,7 @@ sourceSets {
         }
         java {
             srcDir("$projectDir/../src/main/kotlin/rules_intellij/indexing")
+            srcDir("$projectDir/../src/main/kotlin/rules_intellij/domain_socket")
         }
         resources {
             srcDir("$projectDir/../src/main/resources")

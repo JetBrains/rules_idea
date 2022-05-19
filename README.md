@@ -24,3 +24,9 @@ The output should be:
     INFO: Elapsed time: 1.206s, Critical Path: 1.13s
     INFO: 9 processes: 5 internal, 4 worker.
     INFO: Build completed successfully, 9 total actions
+
+### More examples:
+
+Work in progress indexing testing with bazel project itself:
+
+    https://github.com/flarebuild/bazel/tree/gleb/indexing_sample

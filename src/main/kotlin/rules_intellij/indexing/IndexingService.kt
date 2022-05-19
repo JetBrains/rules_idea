@@ -15,6 +15,7 @@ import io.grpc.Status
 import io.grpc.StatusException
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
+import kotlin.io.path.createTempFile
 import java.nio.file.Paths
 
 class IndexingService(
@@ -116,16 +117,27 @@ class IndexingService(
 
         ConsoleLog.info("Indexing $chunk...")
         indicator.isIndeterminate = false
-        val result = IndexesExporter.exportIndexesChunk(
-            project = project,
-            indicator = indicator,
-            request = exportedRequest
-        )
 
-        return IndexResponse.newBuilder()
-            .setIjxPath(result.files.indexPath.toString())
-            .setIjxMetadataPath(result.files.metadataPath.toString())
-            .setIjxSha256Path(result.files.sha256Path.toString())
-            .build()
+        try {
+            val result = IndexesExporter.exportIndexesChunk(
+                project = project,
+                indicator = indicator,
+                request = exportedRequest
+            )
+            return IndexResponse.newBuilder()
+                .setIjxPath(result.files.indexPath.toString())
+                .setIjxMetadataPath(result.files.metadataPath.toString())
+                .setIjxSha256Path(result.files.sha256Path.toString())
+                .build()
+        } catch (e: Exception) {
+            if (e.message?.contains("shared index is empty") == true) {
+                return IndexResponse.newBuilder()
+                    .setIjxPath(createTempFile().toString())
+                    .setIjxMetadataPath(createTempFile().toString())
+                    .setIjxSha256Path(createTempFile().toString())
+                    .build()
+            }
+            throw e
+        }
     }
 }
