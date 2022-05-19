@@ -20,9 +20,7 @@ class WorkerLogger(debugLog: String?) {
         out.println("----------------------------")
         out.flush()
 
-        synchronized(this) {
-            wout.write(baos.toByteArray())
-        }
+        wout.write(baos.toByteArray())
     }
 
     fun log(tag: String, f: (out: PrintStream) -> Unit) = log(tag, out, f)

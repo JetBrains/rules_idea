@@ -14,7 +14,9 @@ import java.io.*
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import java.lang.Runnable
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.exists
 
 
 interface IntellijIndexingClientArgs {
@@ -60,12 +62,19 @@ abstract class IntellijIndexingClient(args: IntellijIndexingClientArgs) {
 class IntellijIndexingClientDebugArgs(
     override val logger: WorkerLogger,
     override val projectDir: String,
+    private val isDomainSocket: Boolean,
     val endpoint: String
 ): IntellijIndexingClientArgs {
-    override val channel: ManagedChannel
-        get() = ManagedChannelBuilder.forTarget(endpoint)
-            .usePlaintext()
-            .build()
+    override val channel: ManagedChannel =
+        if (isDomainSocket)
+            NettyDomainSocketChannelBuilder
+                .forDomainSocket(Path.of(endpoint).toAbsolutePath().toString())
+                .usePlainText()
+                .build()
+        else
+            ManagedChannelBuilder.forTarget(endpoint)
+                .usePlaintext()
+                .build()
 }
 
 class IntellijIndexingClientDebug(args: IntellijIndexingClientDebugArgs): IntellijIndexingClient(args) {
@@ -94,8 +103,8 @@ class IntellijIndexingClientStarterArgs(
     val dir: Path = createTempDirectory().resolve(getRandomString(10))
     val socket = dir.resolve("intellij.socket")
 
-    override val channel: ManagedChannel
-        get() = NettyDomainSocketChannelBuilder
+    override val channel: ManagedChannel =
+        NettyDomainSocketChannelBuilder
             .forDomainSocket(socket.toAbsolutePath().toString())
             .usePlainText()
             .build()
@@ -170,6 +179,19 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
         }
     }
 
+    private fun closeAll(process: Process) {
+        process.toHandle().descendants().forEach { it.destroyForcibly() }
+        process.destroyForcibly()
+        dir.toFile().deleteRecursively()
+    }
+
+    private fun onProcessStopped(process: Process) {
+        closeAll(process)
+        val stdout = process.inputStream.bufferedReader().use(BufferedReader::readText)
+        val stderr = process.errorStream.bufferedReader().use(BufferedReader::readText)
+        throw IOException("Intellij stopped with: ${process.exitValue()}, \nstdout:\n$stdout\nstderr:\n$stderr}")
+    }
+
     private suspend fun startIntellij(): Unit = withContext(Dispatchers.IO) {
         val path = Paths.get("").toAbsolutePath().toString()
         val cmdLine = listOf(
@@ -208,50 +230,54 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
 
         val process = ProcessBuilder()
             .command(cmdLine)
-//            .apply { environment().clear() }
             .start()
 
-        Runtime.getRuntime().addShutdownHook(Thread {
+        val closeAll = Runnable {
             process.toHandle().descendants().forEach { it.destroyForcibly() }
             process.destroyForcibly()
             dir.toFile().deleteRecursively()
-        })
+        }
+
+        Runtime.getRuntime().addShutdownHook(Thread { closeAll(process) })
 
         logStream("INTELLIJ STDOUT", process.inputStream)
         logStream("INTELLIJ STDERR", process.errorStream)
 
-        val result = process.waitFor()
-        val stdout = process.inputStream.bufferedReader().use(BufferedReader::readText)
-        val stderr = process.errorStream.bufferedReader().use(BufferedReader::readText)
-
-        throw IOException("Intellij stopped with: $result, \nstdout:\n$stdout\nstderr:\n$stderr}")
+        process.waitFor()
+        onProcessStopped(process)
     }
 
-    override suspend fun start(): Result<Long> = runCatching {
+    private suspend fun waitStarted() {
+        for (i in 0..20) {
+            if (socket.exists()) {
+                return
+            }
+
+            delay(1000)
+        }
+
+        throw RuntimeException("No domaiun socket at path: ${socket.toAbsolutePath()} after 20 sec")
+    }
+
+    override suspend fun start(): Result<Long>  {
         scope.launch {
             runCatching { startIntellij() }
                 .onFailure { logger.err("INTELLIJ Exception", it) }
         }
 
-        var result: Result<Long>? = null
-        for (i in 0..20) {
-            delay(1000)
-            result = startInternal()
-            if (result.isSuccess || i == 19) {
-                break
-            }
-        }
-        result!!.getOrThrow()
+        waitStarted()
+        return startInternal()
     }
 }
 
 fun createIntellijIndexingClient(args: IndexingWorkerArgs, logger: WorkerLogger): Result<IntellijIndexingClient> =  runCatching{
     val projectDir = args.projectDir ?: throw IllegalArgumentException("No project dir")
-    if (args.debugEndpoint != null) {
+    if (args.debugEndpoint != null || args.debugDomainSocket != null) {
         IntellijIndexingClientDebug(IntellijIndexingClientDebugArgs(
             logger,
-            args.debugEndpoint!!,
-            projectDir
+            projectDir,
+            args.debugDomainSocket != null,
+            args.debugEndpoint ?: args.debugDomainSocket!!
         ))
     } else {
         IntellijIndexingClientStarter(IntellijIndexingClientStarterArgs(

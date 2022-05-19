@@ -39,6 +39,8 @@ def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
     more_inputs = []
     if hasattr(ctx.attr, "_debug_endpoint"):
         args.add_all("--debug_endpoint", [ ctx.attr._debug_endpoint ])
+    elif hasattr(ctx.attr, "_debug_domain_socket"):
+        args.add_all("--debug_domain_socket", [ ctx.attr._debug_domain_socket ])
     else:
         args.add_all("--java_binary", [ java_runtime.java_executable_exec_path ])
         tools += java_runtime.files.to_list()
@@ -137,7 +139,8 @@ _indexing_aspect = aspect(
             executable = True,
             cfg = "exec",
         ),
-        "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
+#        "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
+#        "_debug_domain_socket": attr.string(default = "/tmp/test.sock"),
 #        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
     },
     toolchains = [

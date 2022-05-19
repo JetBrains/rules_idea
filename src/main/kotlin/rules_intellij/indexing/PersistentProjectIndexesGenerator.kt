@@ -111,6 +111,7 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
       run(NettyDomainSocketServerBuilder
         .forDomainSocket(args.domainSocket!!)
         .eventGroups(1, 4)
+        .addService(IndexingService(indicator, args))
         .build(), args.domainSocket!!)
     }
   }

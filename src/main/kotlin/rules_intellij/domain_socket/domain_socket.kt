@@ -1,20 +1,19 @@
 package rules_intellij.domain_socket
 
-import io.grpc.netty.NettyServerBuilder
+import io.grpc.BindableService
+import io.grpc.ManagedChannel
+import io.grpc.Server
 import io.grpc.netty.NettyChannelBuilder
-
+import io.grpc.netty.NettyServerBuilder
 import io.netty.channel.epoll.Epoll
 import io.netty.channel.epoll.EpollDomainSocketChannel
-import io.netty.channel.epoll.EpollServerDomainSocketChannel
 import io.netty.channel.epoll.EpollEventLoopGroup
+import io.netty.channel.epoll.EpollServerDomainSocketChannel
 import io.netty.channel.kqueue.KQueue
 import io.netty.channel.kqueue.KQueueDomainSocketChannel
-import io.netty.channel.kqueue.KQueueServerDomainSocketChannel
 import io.netty.channel.kqueue.KQueueEventLoopGroup
+import io.netty.channel.kqueue.KQueueServerDomainSocketChannel
 import io.netty.channel.unix.DomainSocketAddress
-
-import io.grpc.Server
-import io.grpc.ManagedChannel
 
 private fun<T> withUnsupportedException(): T {
     throw RuntimeException("Unsupported OS '${System.getProperty("os.name") }', only Unix and Mac are supported")
@@ -53,6 +52,8 @@ class NettyDomainSocketServerBuilder(socket: String) {
         else
             withUnsupportedException()
     )
+
+    fun addService(bindableService: BindableService?) = innerBuilder.addService(bindableService)
 
     fun build(): Server = innerBuilder.build()
 }
