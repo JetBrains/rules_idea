@@ -12,6 +12,9 @@ object IndexingWorker {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+        val logger = WorkerLogger(System.getenv("INTELLIJ_WORKER_DEBUG"))
+        onStartup(args, logger)
+
         val startupArgs = IndexingWorkerArgs()
             .also { it.parseArgs(args) }
 
@@ -19,15 +22,10 @@ object IndexingWorker {
             throw UnsupportedOperationException("Only persistent workers supported")
         }
 
-        val logger = WorkerLogger(startupArgs.debugLog)
-        onStartup(args, logger)
-
         try {
             val ioScope = CoroutineScope(Dispatchers.IO)
             val client = createIntellijIndexingClient(startupArgs, logger).getOrThrow()
-
-            val projectId = client.start().getOrThrow()
-            logger.log("PROJECT ID", projectId)
+            client.start().getOrThrow()
 
             while (true) {
                 val request = WorkRequest.parseDelimitedFrom(System.`in`)
@@ -36,6 +34,7 @@ object IndexingWorker {
                 ioScope.launch {
                     logger.log("WorkRequest", request)
                     try {
+                        val projectId = client.getProjectId().getOrThrow()
                         processWorkRequest(client, projectId, request)
                             .also { logger.log("WorkResponse", it) }
                             .writeDelimitedTo(System.out)

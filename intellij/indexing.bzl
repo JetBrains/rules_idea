@@ -31,9 +31,10 @@ def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
     out_sha256 = ctx.actions.declare_file("%s.ijx.sha256" % ctx.rule.attr.name)
     outputs = [out_ijx, out_meta, out_sha256]
 
+    env = {}
     args = ctx.actions.args()
     if hasattr(ctx.attr, "_debug_log"):
-        args.add_all("--debug_log", [ ctx.attr._debug_log ])
+        env["INTELLIJ_WORKER_DEBUG"] = ctx.attr._debug_log
 
     tools = []
     more_inputs = []
@@ -68,6 +69,7 @@ def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
         tools = tools,
         inputs = inputs + more_inputs + [ worker_arg_file ] + intellij_project.project_files,
         outputs = outputs,
+        env = env,
         execution_requirements = {
             "worker-key-mnemonic": "IntellijIndexing",
             "supports-workers": "1",

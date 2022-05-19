@@ -32,7 +32,18 @@ abstract class IntellijIndexingClient(args: IntellijIndexingClientArgs) {
     private val projectDir = args.projectDir
     private val stub = DaemonCoroutineStub(args.channel)
 
-    internal suspend fun startInternal(): Result<Long> = runCatching {
+    suspend fun index(request: IndexRequest): Result<IndexResponse> = runCatching {
+        logger.log("IndexRequest", request)
+
+        val response = stub.index(request)
+
+        logger.log("IndexResponse", request)
+
+        response
+    }
+
+
+    suspend fun getProjectId(): Result<Long> = runCatching {
         val request = StartupRequest.newBuilder()
             .setProjectDir(System.getProperty("user.dir") + "/" + projectDir)
             .build()
@@ -46,17 +57,7 @@ abstract class IntellijIndexingClient(args: IntellijIndexingClientArgs) {
         response.projectId
     }
 
-    suspend fun index(request: IndexRequest): Result<IndexResponse> = runCatching {
-        logger.log("IndexRequest", request)
-
-        val response = stub.index(request)
-
-        logger.log("IndexResponse", request)
-
-        response
-    }
-
-    abstract suspend fun start(): Result<Long>
+    open suspend fun start(): Result<Unit> = getProjectId().map {}
 }
 
 class IntellijIndexingClientDebugArgs(
@@ -78,8 +79,6 @@ class IntellijIndexingClientDebugArgs(
 }
 
 class IntellijIndexingClientDebug(args: IntellijIndexingClientDebugArgs): IntellijIndexingClient(args) {
-
-    override suspend fun start(): Result<Long> = startInternal()
 }
 
 class IntellijIndexingClientStarterArgs(
@@ -232,12 +231,6 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
             .command(cmdLine)
             .start()
 
-        val closeAll = Runnable {
-            process.toHandle().descendants().forEach { it.destroyForcibly() }
-            process.destroyForcibly()
-            dir.toFile().deleteRecursively()
-        }
-
         Runtime.getRuntime().addShutdownHook(Thread { closeAll(process) })
 
         logStream("INTELLIJ STDOUT", process.inputStream)
@@ -248,7 +241,7 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
     }
 
     private suspend fun waitStarted() {
-        for (i in 0..20) {
+        for (i in 0..180) {
             if (socket.exists()) {
                 return
             }
@@ -256,17 +249,17 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
             delay(1000)
         }
 
-        throw RuntimeException("No domaiun socket at path: ${socket.toAbsolutePath()} after 20 sec")
+        throw RuntimeException("No domaiun socket at path: ${socket.toAbsolutePath()} after 3 minutes")
     }
 
-    override suspend fun start(): Result<Long>  {
+    override suspend fun start(): Result<Unit> = runCatching  {
         scope.launch {
             runCatching { startIntellij() }
                 .onFailure { logger.err("INTELLIJ Exception", it) }
         }
 
         waitStarted()
-        return startInternal()
+        super.start().getOrThrow()
     }
 }
 

@@ -4,8 +4,30 @@ import java.io.PrintStream
 import kotlin.system.exitProcess
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
+import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
 
-class WorkerLogger(debugLog: String?) {
+class WorkerLogger(debugDir: String?) {
+    private val debugLog: String? = if (debugDir != null) {
+        val dir = Path.of("/tmp/intellij_debug")
+        dir.toFile().mkdirs()
+        dir.toString()
+
+        var i = 0
+        while(!dir.resolve("$i").toFile().createNewFile()) {
+            ++i
+        }
+        val result = dir.resolve("$i")
+
+        Runtime.getRuntime().addShutdownHook(Thread {
+            result.deleteIfExists()
+        })
+
+        result.toString()
+    } else {
+        null
+    }
+
     private var out: PrintStream? = if (debugLog != null) PrintStream(debugLog)  else null
 
     private fun log(tag: String, w: PrintStream?, f: (out: PrintStream) -> Unit) {
