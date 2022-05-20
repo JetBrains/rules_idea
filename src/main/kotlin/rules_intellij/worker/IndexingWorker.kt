@@ -37,7 +37,10 @@ object IndexingWorker {
                         val projectId = client.getProjectId().getOrThrow()
                         processWorkRequest(client, projectId, request)
                             .also { logger.log("WorkResponse", it) }
-                            .writeDelimitedTo(System.out)
+                            .apply { synchronized(IndexingWorker) {
+                                writeDelimitedTo(System.out)
+                            } }
+
                     } catch (e: Exception) {
                         logger.err("UnrecoverableError", e)
                     }
@@ -67,7 +70,7 @@ object IndexingWorker {
         workRequest: WorkRequest
     ): WorkResponse {
         try {
-            val args = IndexingWorkerArgs()
+            val args = IndexingRequestArgs()
                 .also { it.parseArgs(workRequest.argumentsList.toTypedArray()) }
 
             val name = args.name ?: throw IllegalArgumentException("No name")

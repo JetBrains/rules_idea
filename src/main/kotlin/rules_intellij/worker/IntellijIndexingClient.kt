@@ -14,7 +14,6 @@ import java.io.*
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.lang.Runnable
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.exists
 
@@ -209,6 +208,7 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
                 "shared.indexes.download=false",
                 "intellij.hash.as.local.file.timestamp=true",
                 "idea.trust.all.projects=true",
+                "caches.indexerThreadsCount=1",
             ).map { "-D$it" },
             listOf(
                 "-jar",
