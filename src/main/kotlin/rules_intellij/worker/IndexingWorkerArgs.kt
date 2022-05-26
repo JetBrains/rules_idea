@@ -32,11 +32,15 @@ class IndexingWorkerArgs {
     var pluginsDirectory: String? = null
 
     fun parseArgs(args: Array<String>) {
-        JCommander
-            .newBuilder()
-            .addObject(this)
-            .build()
-            .parse(*args)
+        try {
+            JCommander
+                .newBuilder()
+                .addObject(this)
+                .build()
+                .parse(*args)
+        } catch (e: Exception) {
+            throw RuntimeException("IndexingWorkerArgs parse exception: $e\nArgs: ${args.joinToString(" ")}")
+        }
     }
 
 }
@@ -55,10 +59,14 @@ class IndexingRequestArgs {
     var sources: List<String> = ArrayList()
 
     fun parseArgs(args: Array<String>) {
-        JCommander
-            .newBuilder()
-            .addObject(this)
-            .build()
-            .parse(*args)
+        try {
+            JCommander
+                .newBuilder()
+                .addObject(this)
+                .build()
+                .parse(*args)
+        } catch (e: Exception) {
+            throw RuntimeException("IndexingRequestArgs parse exception: $e\nArgs: ${args.joinToString(" ")}")
+        }
     }
 }

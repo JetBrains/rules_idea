@@ -25,6 +25,15 @@ def _map_path(x):
     return x.path
 
 
+def _stringify_label(l):
+    result = str(l)
+    if result.startswith("@"):
+        return result[1:]
+    return result
+
+def _stringify_name(n):
+    return n.replace("/", "_")
+
 def _create_worker_defs(ctx, intellij, intellij_project, java_runtime):
     env = {}
     if hasattr(ctx.attr, "_debug_log"):
@@ -58,18 +67,20 @@ def _create_worker_defs(ctx, intellij, intellij_project, java_runtime):
 
 
 def _create_indexing_defs(ctx, inputs):
+    name = _stringify_name(ctx.rule.attr.name)
+
     info = IntellijIndexInfo(
-       ijx = ctx.actions.declare_file("%s.ijx" % ctx.rule.attr.name),
-       metadata = ctx.actions.declare_file("%s.ijx.metadata.json" % ctx.rule.attr.name),
-       sha256 = ctx.actions.declare_file("%s.ijx.sha256" % ctx.rule.attr.name),
+       ijx = ctx.actions.declare_file("%s.ijx" % name),
+       metadata = ctx.actions.declare_file("%s.ijx.metadata.json" % name),
+       sha256 = ctx.actions.declare_file("%s.ijx.sha256" % name),
     )
 
     args_file = ctx.actions.declare_file(ctx.rule.attr.name + "_args_file")
 
     indexing_args = ctx.actions.args()
     indexing_args.add_all("--out_dir", [ paths.dirname(info.ijx.path) ])
-    indexing_args.add_all("--target", [ str(ctx.label) ])
-    indexing_args.add_all("--name", [ ctx.rule.attr.name ])
+    indexing_args.add_all("--target", [ _stringify_label(ctx.label) ])
+    indexing_args.add_all("--name", [ name ])
     indexing_args.add_all(inputs, map_each=_map_path, before_each="-s")
 
     ctx.actions.write(

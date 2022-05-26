@@ -83,7 +83,7 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
 
         val onError = { e: Throwable ->
             ConsoleLog.info("Indexing Server Startup Exception: $e\n${e.stackTraceToString()}")
-            responseObserver.onError(e)
+            responseObserver.onError(StatusException(Status.fromThrowable(e)))
         }
 
         try {
@@ -138,7 +138,7 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
             responseObserver.onCompleted()
         } catch (e: Throwable) {
             ConsoleLog.info("Indexing Server Index Exception: $e\n${e.stackTraceToString()}")
-            responseObserver.onError(e)
+            responseObserver.onError(StatusException(Status.fromThrowable(e)))
         }
     }
 
