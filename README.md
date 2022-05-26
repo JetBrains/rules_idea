@@ -25,8 +25,19 @@ The output should be:
     INFO: 9 processes: 5 internal, 4 worker.
     INFO: Build completed successfully, 9 total actions
 
+To run Idea with generated indexes loaded:
+
+    bazel run :idea_run
+
+You should see in logs:
+
+    .OnDiskSharedIndexChunkLocator - Shared Index /home/gleyba/develop/flarebuild/rules_idea/examples/test/bazel-out/k8-fastbuild/bin/common/common.ijx is requested by the IDE 
+    .OnDiskSharedIndexChunkLocator - Shared Index /home/gleyba/develop/flarebuild/rules_idea/examples/test/bazel-out/k8-fastbuild/bin/foo/foo.ijx is requested by the IDE
+    .OnDiskSharedIndexChunkLocator - Shared Index /home/gleyba/develop/flarebuild/rules_idea/examples/test/bazel-out/k8-fastbuild/bin/baz/baz.ijx is requested by the IDE
+    .OnDiskSharedIndexChunkLocator - Shared Index /home/gleyba/develop/flarebuild/rules_idea/examples/test/bazel-out/k8-fastbuild/bin/bar/bar.ijx is requested by the IDE
+
+
 ### More examples:
 
-Work in progress indexing testing with bazel project itself:
-
-    https://github.com/flarebuild/bazel/tree/gleb/indexing_sample
+- Indexing inside Bazel's codebase itself:
+[Bazel](https://github.com/flarebuild/bazel/tree/gleb/indexing_sample)

@@ -97,21 +97,22 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
     System.setProperty("idea.skip.indices.initialization", "true")
     System.setProperty("idea.force.dumb.queue.tasks", "true")
     System.setProperty("idea.suspend.indexes.initialization", "true")
-    System.setProperty("intellij.disable.shared.indexes", true.toString())
-    System.setProperty("shared.indexes.download", false.toString())
-    System.setProperty("intellij.hash.as.local.file.timestamp", true.toString())
-    System.setProperty("idea.trust.all.projects", true.toString())
+    System.setProperty("intellij.disable.shared.indexes", "true")
+    System.setProperty("shared.indexes.download", "false")
+    System.setProperty("intellij.hash.as.local.file.timestamp", "true")
+    System.setProperty("idea.trust.all.projects", "true")
+    System.setProperty("caches.indexerThreadsCount", "1")
 
     if (args.domainSocket == null) {
       run(NettyServerBuilder
         .forPort(args.port)
-        .addService(IndexingService(indicator, args))
+        .addService(IndexingService())
         .build(), "${args.port}")
     } else {
       run(NettyDomainSocketServerBuilder
         .forDomainSocket(args.domainSocket!!)
-        .eventGroups(1, 4)
-        .addService(IndexingService(indicator, args))
+        .eventGroups(1,  Runtime.getRuntime().availableProcessors())
+        .addService(IndexingService())
         .build(), args.domainSocket!!)
     }
   }

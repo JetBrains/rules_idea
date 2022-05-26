@@ -112,8 +112,7 @@ public class OnDiskSharedIndexChunkLocator implements StartupActivity.RequiredFo
     @NotNull SharedIndexMetadata version;
     try {
       version = Objects.requireNonNull(getVersion(filePath), "Shared index " + filePath + " contains incompatible metadata");
-    }
-    catch (Throwable e) {
+    } catch (Throwable e) {
       LOG.error("Can't fetch shared index version for " + filePath + ". " + e.getMessage(), e);
       return null;
     }
@@ -121,8 +120,7 @@ public class OnDiskSharedIndexChunkLocator implements StartupActivity.RequiredFo
     String fileSize = "(no file size)";
     try {
       fileSize = StringUtil.formatFileSize(Files.size(filePath));
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOG.warn("Can't get size of shared index file " + filePath + ". " + e.getMessage(), e);
     }
 

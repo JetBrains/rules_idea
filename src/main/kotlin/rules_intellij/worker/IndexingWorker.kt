@@ -4,9 +4,10 @@ import com.google.devtools.build.lib.worker.WorkerProtocol.WorkRequest
 import com.google.devtools.build.lib.worker.WorkerProtocol.WorkResponse
 import com.intellij.indexing.shared.ultimate.persistent.rpc.IndexRequest
 import kotlinx.coroutines.*
-import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
+import kotlin.io.path.exists
+import kotlin.io.path.moveTo
 
 object IndexingWorker {
 
@@ -37,7 +38,10 @@ object IndexingWorker {
                         val projectId = client.getProjectId().getOrThrow()
                         processWorkRequest(client, projectId, request)
                             .also { logger.log("WorkResponse", it) }
-                            .writeDelimitedTo(System.out)
+                            .apply { synchronized(IndexingWorker) {
+                                writeDelimitedTo(System.out)
+                            } }
+
                     } catch (e: Exception) {
                         logger.err("UnrecoverableError", e)
                     }
@@ -67,7 +71,7 @@ object IndexingWorker {
         workRequest: WorkRequest
     ): WorkResponse {
         try {
-            val args = IndexingWorkerArgs()
+            val args = IndexingRequestArgs()
                 .also { it.parseArgs(workRequest.argumentsList.toTypedArray()) }
 
             val name = args.name ?: throw IllegalArgumentException("No name")
@@ -90,10 +94,20 @@ object IndexingWorker {
             val response = client.index(request).getOrThrow()
 
             val moveOrThrow = { input: String, postfix: String ->
-                val output = outPath.resolve(name + postfix).toFile()
-                if (!File(input).renameTo(output)) {
-                    throw IOException("Can't move $input to $output")
+
+                val inputPath = Paths.get(input)
+                if (!inputPath.exists()) {
+                    throw IOException("Worker input: $input do not exists")
                 }
+
+                val outputPath = outPath.resolve(name + postfix)
+                if (outputPath.exists()) {
+                    throw IOException("Worker output: $outputPath already exists")
+                }
+
+                outputPath.parent.toFile().mkdirs()
+
+                inputPath.moveTo(outputPath)
             }
 
             moveOrThrow(response.ijxPath, ".ijx")
@@ -106,7 +120,7 @@ object IndexingWorker {
         } catch (e: Exception) {
             return WorkResponse.newBuilder()
                 .setExitCode(1)
-                .setOutput(e.toString())
+                .setOutput("${e.toString()}\n")
                 .setRequestId(workRequest.requestId)
                 .build()
         }

@@ -1,7 +1,6 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_intellij//intellij:intellij_project.bzl", "IntellijProject")
 load("@rules_intellij//intellij:intellij_toolchain.bzl", "Intellij")
-#load("@rules_intellij//intellij:run_intellij.bzl", "run_intellij")
 
 IntellijIndexInfo = provider(
     doc = "Information about intellij target indexes",
@@ -25,64 +24,101 @@ IntellijTransitiveIndexInfo = provider(
 def _map_path(x):
     return x.path
 
-def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
-    out_ijx = ctx.actions.declare_file("%s.ijx" % ctx.rule.attr.name)
-    out_meta = ctx.actions.declare_file("%s.ijx.metadata.json" % ctx.rule.attr.name)
-    out_sha256 = ctx.actions.declare_file("%s.ijx.sha256" % ctx.rule.attr.name)
-    outputs = [out_ijx, out_meta, out_sha256]
 
+def _stringify_label(l):
+    result = str(l)
+    if result.startswith("@"):
+        return result[1:]
+    return result
+
+def _stringify_name(n):
+    return n.replace("/", "_")
+
+def _create_worker_defs(ctx, intellij, intellij_project, java_runtime):
     env = {}
-    args = ctx.actions.args()
     if hasattr(ctx.attr, "_debug_log"):
         env["INTELLIJ_WORKER_DEBUG"] = ctx.attr._debug_log
 
+    worker_args = ctx.actions.args()
+    worker_args.add_all("--project_dir", [ intellij_project.project_dir ])
+
     tools = []
-    more_inputs = []
+    tools += intellij_project.project_files
+
     if hasattr(ctx.attr, "_debug_endpoint"):
-        args.add_all("--debug_endpoint", [ ctx.attr._debug_endpoint ])
+        worker_args.add_all("--debug_endpoint", [ ctx.attr._debug_endpoint ])
     elif hasattr(ctx.attr, "_debug_domain_socket"):
-        args.add_all("--debug_domain_socket", [ ctx.attr._debug_domain_socket ])
+        worker_args.add_all("--debug_domain_socket", [ ctx.attr._debug_domain_socket ])
     else:
-        args.add_all("--java_binary", [ java_runtime.java_executable_exec_path ])
+        worker_args.add_all("--java_binary", [ java_runtime.java_executable_exec_path ])
+        worker_args.add_all("--ide_home_dir", [ intellij.home_directory ])
+        worker_args.add_all("--ide_binary", [ intellij.binary.path ])
+        worker_args.add_all("--plugins_directory", [ paths.dirname(intellij.plugins[0].path) ])
+
         tools += java_runtime.files.to_list()
-        args.add_all("--ide_home_dir", [ intellij.home_directory ])
-        args.add_all("--ide_binary", [ intellij.binary.path ])
         tools += intellij.files + [ intellij.binary ]
-        args.add_all("--plugins_directory", [ paths.dirname(intellij.plugins[0].path) ])
-        more_inputs += intellij.plugins
+        tools += intellij.plugins
 
-    worker_arg_file = ctx.actions.declare_file(ctx.rule.attr.name + ".worker_args")
+    return struct(
+        tools = tools,
+        args = [ worker_args ],
+        env = env,
+    )
 
-    args.add_all("--project_dir", [ intellij_project.project_dir ])
-    args.add_all("--out_dir", [ paths.dirname(out_ijx.path) ])
-    args.add_all("--target", [ str(ctx.label) ])
-    args.add_all("--name", [ ctx.rule.attr.name ])
-    args.add_all(inputs, map_each=_map_path, before_each="-s")
+
+def _create_indexing_defs(ctx, inputs):
+    name = _stringify_name(ctx.rule.attr.name)
+
+    info = IntellijIndexInfo(
+       ijx = ctx.actions.declare_file("%s.ijx" % name),
+       metadata = ctx.actions.declare_file("%s.ijx.metadata.json" % name),
+       sha256 = ctx.actions.declare_file("%s.ijx.sha256" % name),
+    )
+
+    args_file = ctx.actions.declare_file(ctx.rule.attr.name + "_args_file")
+
+    indexing_args = ctx.actions.args()
+    indexing_args.add_all("--out_dir", [ paths.dirname(info.ijx.path) ])
+    indexing_args.add_all("--target", [ _stringify_label(ctx.label) ])
+    indexing_args.add_all("--name", [ name ])
+    indexing_args.add_all(inputs, map_each=_map_path, before_each="-s")
 
     ctx.actions.write(
-        output = worker_arg_file,
-        content = args,
+        output = args_file,
+        content = indexing_args,
     )
+
+    return struct(
+        info = info,
+        args_file = args_file,
+        inputs = inputs + [ args_file ],
+        outputs = [
+            info.ijx,
+            info.metadata,
+            info.sha256,
+        ],
+    )
+
+
+def _run_indexing(ctx, intellij, intellij_project, java_runtime, inputs):
+    worker_defs = _create_worker_defs(ctx, intellij, intellij_project, java_runtime)
+    indexing_defs = _create_indexing_defs(ctx, inputs)
+
     ctx.actions.run(
         mnemonic = "IntellijIndexing",
         executable = ctx.executable._worker,
-        tools = tools,
-        inputs = inputs + more_inputs + [ worker_arg_file ] + intellij_project.project_files,
-        outputs = outputs,
-        env = env,
+        tools = worker_defs.tools,
+        inputs = indexing_defs.inputs,
+        outputs = indexing_defs.outputs,
+        env = worker_defs.env,
         execution_requirements = {
             "worker-key-mnemonic": "IntellijIndexing",
-            "supports-workers": "1",
             "supports-multiplex-workers": "1",
             "requires-worker-protocol": "proto",
         },
-        arguments = [args] + ["@" + worker_arg_file.path],
+        arguments = worker_defs.args + ["@" + indexing_defs.args_file.path],
     )
-    return IntellijIndexInfo(
-        ijx = out_ijx,
-        metadata = out_meta,
-        sha256 = out_sha256,
-    )
+    return indexing_defs.info
 
 
 def _collect_sources_to_index(ctx):
@@ -141,7 +177,7 @@ _indexing_aspect = aspect(
             executable = True,
             cfg = "exec",
         ),
-#        "_debug_log": attr.string(default = "/tmp/indexing_worker_debug.log"),
+#        "_debug_log": attr.string(default = "/tmp/intellij_debug"),
 #        "_debug_domain_socket": attr.string(default = "/tmp/test.sock"),
 #        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
     },
@@ -156,15 +192,31 @@ _indexing_aspect = aspect(
 def _generate_indexes_impl(ctx):
     index_infos = _collect_transitive_index_infos(ctx.attr.deps).to_list()
     all_indexed_files = []
+    all_ijx_files = []
     for indexed in index_infos:
         all_indexed_files += [
             indexed.ijx,
             indexed.metadata,
             indexed.sha256,
         ]
+        all_ijx_files.append(indexed.ijx)
+
+    out_json = ctx.actions.declare_file("%s.json" % ctx.attr.name)
+    ctx.actions.write(
+        out_json,
+        json.encode({
+            "shared-indexes": [ x.path for x in all_ijx_files]
+        }),
+    )
 
     return [
-        OutputGroupInfo(indexed_files = depset(all_indexed_files)),
+        DefaultInfo(
+            files = depset([out_json]),
+            runfiles = ctx.runfiles(files = [out_json] + all_ijx_files),
+        ),
+        OutputGroupInfo(
+            indexed_files = depset(all_indexed_files)
+        ),
     ]
 
 
@@ -181,26 +233,6 @@ _generate_indexes = rule(
 )
 
 def generate_indexes(name, deps):
-#    run_intellij(
-#        name = "%s_run" % name,
-#        config_dir = "__%s_config" % name,
-#        system_dir = "__%s_system_dir" % name,
-#        jvm_props = {
-#            "idea.platform.prefix": "Idea",
-#            "idea.initially.ask.config": "false",
-#            "idea.skip.indices.initialization": "true",
-#            "idea.force.dumb.queue.tasks": "true",
-#            "idea.suspend.indexes.initialization": "true",
-#            "intellij.disable.shared.indexes": "true",
-#            "shared.indexes.download": "false",
-#            "intellij.hash.as.local.file.timestamp": "true",
-#            "idea.trust.all.projects": "true",
-#        },
-#        args = [
-#            "dump-shared-index",
-#            "persistent-project",
-#        ],
-#    )
     _generate_indexes(
         name = name, 
         deps = deps,

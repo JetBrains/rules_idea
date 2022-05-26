@@ -7,7 +7,7 @@ setup_intellij_toolchain(
     name = "ide",
     ide_repo = "idea_ultimate",
     plugins = {
-#        "ijwb": "@bazel_2022.02.23.0.0-api-version-212//file",
+        "ijwb": "@bazel_2022.02.23.0.0-api-version-212//file",
     },
 )
 
@@ -27,8 +27,6 @@ generate_indexes(
 
 run_intellij(
     name = "idea_run",
-    jvm_props = {
-        "idea.platform.prefix": "Idea",
-    },
-    args = [],
+    jvm_props = { "idea.platform.prefix": "Idea" },
+    indexes = ":indexes"
 )

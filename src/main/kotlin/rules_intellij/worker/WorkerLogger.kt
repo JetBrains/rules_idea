@@ -9,21 +9,10 @@ import kotlin.io.path.deleteIfExists
 
 class WorkerLogger(debugDir: String?) {
     private val debugLog: String? = if (debugDir != null) {
-        val dir = Path.of("/tmp/intellij_debug")
+        val dir = Path.of(debugDir)
         dir.toFile().mkdirs()
         dir.toString()
-
-        var i = 0
-        while(!dir.resolve("$i").toFile().createNewFile()) {
-            ++i
-        }
-        val result = dir.resolve("$i")
-
-        Runtime.getRuntime().addShutdownHook(Thread {
-            result.deleteIfExists()
-        })
-
-        result.toString()
+        dir.resolve("log").toString()
     } else {
         null
     }
