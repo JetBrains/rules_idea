@@ -192,14 +192,32 @@ _indexing_aspect = aspect(
 def _generate_indexes_impl(ctx):
     index_infos = _collect_transitive_index_infos(ctx.attr.deps).to_list()
     all_indexed_files = []
+    all_ijx_files = []
     for indexed in index_infos:
         all_indexed_files += [
             indexed.ijx,
             indexed.metadata,
             indexed.sha256,
         ]
+        all_ijx_files.append(indexed.ijx)
 
-    return [ OutputGroupInfo(indexed_files = depset(all_indexed_files)), ]
+    out_json = ctx.actions.declare_file("%s.json" % ctx.attr.name)
+    ctx.actions.write(
+        out_json,
+        json.encode({
+            "shared-indexes": [ x.path for x in all_ijx_files]
+        }),
+    )
+
+    return [
+        DefaultInfo(
+            files = depset([out_json]),
+            runfiles = ctx.runfiles(files = [out_json] + all_ijx_files),
+        ),
+        OutputGroupInfo(
+            indexed_files = depset(all_indexed_files)
+        ),
+    ]
 
 
 _generate_indexes = rule(

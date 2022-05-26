@@ -27,6 +27,5 @@ The output should be:
 
 ### More examples:
 
-Work in progress indexing testing with bazel project itself:
-
-    https://github.com/flarebuild/bazel/tree/gleb/indexing_sample
+- Indexing inside Bazel's codebase itself:
+[Bazel](https://github.com/flarebuild/bazel/tree/gleb/indexing_sample)

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
+#include <cstdlib>
 
 #include <unistd.h>
 
@@ -37,16 +38,28 @@ int main(int argc, char *argv[], char **envp) {
         std::cout << argv[i] << std::endl;
     }
 
+    std::string project_dir;
+    const char* workspace_dir = std::getenv("BUILD_WORKSPACE_DIRECTORY");
+    if (workspace_dir) {
+        project_dir = workspace_dir;
+        project_dir += "/{project_dir}";
+    } else {
+        std::cerr << "No 'BUILD_WORKSPACE_DIRECTORY' env set" << std::endl;
+        return 1;
+    }
+
     std::vector<std::string> args {
         "{java}",
         {jvm_flags}
         "-jar",
-        "{binary}"
+        "{binary}",
     };
 
     for (int i = 1; i < argc; ++i) {
         args.push_back(argv[i]);
     }
+
+    args.push_back(project_dir);
 
     std::string cmd = vec_to_str(args);
     std::cout << ">>>>> Running:" << std::endl << cmd << std::endl;
