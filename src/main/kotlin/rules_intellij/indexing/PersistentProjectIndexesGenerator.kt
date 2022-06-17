@@ -78,15 +78,6 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
   }
 
   override fun executeCommand(args: PersistentProjectArgs, indicator: ProgressIndicator) {
-    System.setProperty("idea.skip.indices.initialization", "true")
-    System.setProperty("idea.force.dumb.queue.tasks", "true")
-    System.setProperty("idea.suspend.indexes.initialization", "true")
-    System.setProperty("intellij.disable.shared.indexes", "true")
-    System.setProperty("shared.indexes.download", "false")
-    System.setProperty("intellij.hash.as.local.file.timestamp", "true")
-    System.setProperty("idea.trust.all.projects", "true")
-    System.setProperty("caches.indexerThreadsCount", "1")
-
     if (args.domainSocket == null) {
       run(NettyServerBuilder
         .forPort(args.port)
