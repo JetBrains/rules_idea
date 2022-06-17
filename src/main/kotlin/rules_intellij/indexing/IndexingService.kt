@@ -1,15 +1,9 @@
 package rules_intellij.indexing
 
 import com.intellij.indexing.shared.download.SharedIndexCompression
-import com.intellij.indexing.shared.generator.ConsoleLog
-import com.intellij.indexing.shared.generator.IndexesExporter
-import com.intellij.indexing.shared.generator.IndexesExporterRequest
-import com.intellij.indexing.shared.generator.importOrOpenProject
+import com.intellij.indexing.shared.generator.*
 import com.intellij.indexing.shared.ultimate.persistent.rpc.*
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.PathManager
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.StandardProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringHash
 import com.intellij.util.io.exists
@@ -17,61 +11,34 @@ import io.grpc.Status
 import io.grpc.StatusException
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
+import java.nio.file.Path
 import kotlin.io.path.createTempFile
 import java.nio.file.Paths
 
-class DummyModalityState: ModalityState() {
-    override fun toString(): String = ""
-    override fun dominates(p0: ModalityState): Boolean = false
+fun statusFromThrowable(e: Throwable): StatusException {
+    var sts = Status.fromThrowable(e)
+    if (sts.description?.isEmpty() != false) {
+        sts = Status.UNKNOWN.withDescription(e.message)
+    }
+    return StatusException(sts)
 }
 
-class DummyIndicator: StandardProgressIndicator {
-    private var running = false
-    private var cancelled = false
-
-    override fun start() {
-        running = true
-        cancelled = false
+fun StartupRequest.toOpenProjectArgs(): OpenProjectArgs {
+    val projectPath = Path.of(projectDir)
+    if (!projectPath.toFile().exists()) {
+        throw StatusException(Status.NOT_FOUND.withDescription("project path $projectDir does not exist"))
     }
 
-    override fun stop() {
-        running = false
-        cancelled = false
+    return object : OpenProjectArgs {
+        override val projectDir: Path
+            get() = projectPath
+        override val convertProject: Boolean
+            get() = false
+        override val configureProject: Boolean
+            get() = false
+        override val disabledConfigurators: Set<String>
+            get() = emptySet()
     }
-
-    override fun cancel() {
-        running = false
-        cancelled = true
-    }
-
-    override fun isRunning(): Boolean = running
-    override fun isCanceled(): Boolean = cancelled
-
-    override fun setText(p0: String?) {}
-    override fun getText(): String = ""
-
-    override fun setText2(p0: String?) {}
-    override fun getText2(): String = ""
-
-    override fun getFraction(): Double = 0.0
-    override fun setFraction(p0: Double) {}
-
-    override fun pushState() {}
-    override fun popState() {}
-
-    override fun isModal(): Boolean = false
-
-    override fun getModalityState(): ModalityState = DummyModalityState()
-
-    override fun setModalityProgress(p0: ProgressIndicator?) {}
-
-    override fun isIndeterminate(): Boolean = true
-    override fun setIndeterminate(p0: Boolean) {}
-
-    override fun checkCanceled() {}
-
-    override fun isPopupWasShown(): Boolean = false
-    override fun isShowing(): Boolean = false
 }
 
 class IndexingService: DaemonGrpc.DaemonImplBase() {
@@ -83,7 +50,7 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
 
         val onError = { e: Throwable ->
             ConsoleLog.info("Indexing Server Startup Exception: $e\n${e.stackTraceToString()}")
-            responseObserver.onError(StatusException(Status.fromThrowable(e)))
+            responseObserver.onError(statusFromThrowable(e))
         }
 
         try {
@@ -117,6 +84,8 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
                 .build()
         }
 
+
+
         val indicator = DummyIndicator()
         val project = importOrOpenProject(request.toOpenProjectArgs(), indicator)
 
@@ -138,7 +107,7 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
             responseObserver.onCompleted()
         } catch (e: Throwable) {
             ConsoleLog.info("Indexing Server Index Exception: $e\n${e.stackTraceToString()}")
-            responseObserver.onError(StatusException(Status.fromThrowable(e)))
+            responseObserver.onError(statusFromThrowable(e))
         }
     }
 

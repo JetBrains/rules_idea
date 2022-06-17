@@ -18,8 +18,6 @@ import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 import io.grpc.Status
 import io.grpc.StatusException
-
-import java.nio.file.Path
 import java.nio.file.Paths
 
 class PersistentProjectArgs(parser: ArgsParser) {
@@ -32,20 +30,6 @@ class PersistentProjectArgs(parser: ArgsParser) {
     "socket",
     "unix domain socket to listen on",
   ).stringOrNull()
-}
-
-fun StartupRequest.toOpenProjectArgs(): OpenProjectArgs {
-  val projectPath = Path.of(getProjectDir())
-  return object : OpenProjectArgs {
-    override val projectDir: Path
-      get() = projectPath
-    override val convertProject: Boolean
-      get() = false
-    override val configureProject: Boolean
-      get() = false
-    override val disabledConfigurators: Set<String>
-      get() = emptySet()
-  }
 }
 
 class ProjectPartialIndexChunk(private val request: IndexRequest) : IndexChunk {
