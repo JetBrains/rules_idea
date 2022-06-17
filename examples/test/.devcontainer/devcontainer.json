@@ -1,0 +1,25 @@
+{
+    "name": "rules_intellij",
+  
+    "build": {
+      "dockerfile": "Dockerfile",
+    },
+  
+    "containerEnv": {
+      "PROJECT_DIR": "${containerWorkspaceFolder}"
+    },
+  
+    "settings": {
+      "terminal.integrated.shell.linux": "/bin/bash"
+    },
+  
+    "userEnvProbe": "loginShell",
+  
+    "extensions": [
+      "devondcarew.bazel-code"
+    ],
+  
+    "forwardPorts": [],
+  
+    "remoteUser": "vscode",
+  }

@@ -65,7 +65,14 @@ class NettyDomainSocketChannelBuilder(socket: String) {
 
     private var innerBuilder = NettyChannelBuilder
         .forAddress(DomainSocketAddress(socket))
-        .eventLoopGroup(EpollEventLoopGroup())
+        .eventLoopGroup(
+            if (Epoll.isAvailable())
+                EpollEventLoopGroup()
+            else if (KQueue.isAvailable())
+                KQueueEventLoopGroup()
+            else
+                withUnsupportedException()
+        )
         .channelType(
             if (Epoll.isAvailable())
                 EpollDomainSocketChannel::class.java

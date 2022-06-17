@@ -1,4 +1,4 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 _WORKER_PROTO_COMMIT = "c17f1b7f9b93bf034046d0973bf2b7e9a64815bf"
@@ -63,6 +63,7 @@ RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
     "org.jetbrains.kotlin:kotlin-script-runtime": "@com_github_jetbrains_kotlin//:kotlin-script-runtime",
     "org.jetbrains.kotlin:kotlin-reflect": "@com_github_jetbrains_kotlin//:kotlin-reflect",
 }
+
 
 def rules_intellij_repositories():
     maybe(
@@ -157,4 +158,39 @@ def rules_intellij_repositories():
         name = "workers_proto",
         urls = ["https://raw.githubusercontent.com/bazelbuild/bazel/%s/src/main/protobuf/worker_protocol.proto" % _WORKER_PROTO_COMMIT ],
         sha256 = _WORKER_PROTO_SHA256,
+    )
+    maybe(
+        http_jar,
+        name = "io_netty_netty_transport_native_epoll_linux_x86_64",
+        url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/{v}/netty-transport-native-epoll-{v}-linux-x86_64.jar".format(
+            v = _NETTY_VERSION
+        ),
+        sha256 = "3d4639f03ef04d98ce7f9e56978d6ff5f7deaa9b51cc4f1fa92699a6eed8efb8",
+    )
+
+    maybe(
+        http_jar,
+        name = "io_netty_netty_transport_native_epoll_linux_aarch_64",
+        url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/{v}/netty-transport-native-epoll-{v}-linux-aarch_64.jar".format(
+            v = _NETTY_VERSION
+        ),
+        sha256 = "d093f8e3b58434016f52822450f13d70703f811c5d67c4cc31fb0380f22bd9fb",
+    )
+
+    maybe(
+        http_jar,
+        name = "io_netty_netty_transport_native_kqueue_osx_x86_64",
+        url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-kqueue/{v}/netty-transport-native-kqueue-{v}-osx-x86_64.jar".format(
+            v = _NETTY_VERSION
+        ),
+        sha256 = "4c3bbc22abadfec6fa9bfd0a74ce1948341a4b7f5e657d7397e24a6cd509ad50",
+    )
+
+    maybe(
+        http_jar,
+        name = "io_netty_netty_transport_native_kqueue_osx_aarch_64",
+        url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-kqueue/{v}/netty-transport-native-kqueue-{v}-osx-aarch_64.jar".format(
+            v = _NETTY_VERSION
+        ),
+        sha256 = "fb3ffbbafa9175c6d125ef87ba925d2b32f0b10c57635902a017be45171c46fb",
     )
