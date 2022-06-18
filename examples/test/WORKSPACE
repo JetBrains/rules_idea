@@ -15,8 +15,8 @@ rules_intellij_deps_toolchains()
 load("@rules_intellij//intellij:intellij.bzl", "intellij")
 intellij(
     name = "idea_ultimate",
-    version = "2021.2.3",
-    sha256 = "89ad86c940ab1cc7dc13882cd705919830ccfb02814789c0f9389fff26af1ad1",
+    version = "2021.2.4",
+    sha256 = "f5e942e090693c139dda22e798823285e22d7b31aaad5d52c23a370a6e91ec7d",
     type = "ideaIU",
     plugins = {
         "indexing-shared-ultimate:intellij.indexing.shared:212.5457.6": "d0dc4254cd961669722febeda81ee6fd480b938efb21a79559b51f8b58500ea6", 

@@ -42,7 +42,6 @@ int main(int argc, char *argv[], char **envp) {
     const char* workspace_dir = std::getenv("BUILD_WORKSPACE_DIRECTORY");
     if (workspace_dir) {
         project_dir = workspace_dir;
-        project_dir += "/{project_dir}";
     } else {
         std::cerr << "No 'BUILD_WORKSPACE_DIRECTORY' env set" << std::endl;
         return 1;

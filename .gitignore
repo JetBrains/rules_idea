@@ -2,3 +2,4 @@ bazel-*
 .bazelrc.user
 /.ijwb/
 /.idea/
+**/.ijwb/.idea

@@ -13,7 +13,7 @@ setup_intellij_toolchain(
 
 setup_intellij_project(
     name = "project",
-    project_dir = ".ijwb",
+    # project_dir = ".ijwb", <-- default
 )
 
 generate_indexes(

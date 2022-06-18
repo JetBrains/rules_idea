@@ -44,7 +44,6 @@ def _run_with_ide_src_impl(ctx):
         substitutions = {
             "{java}": java_runtime.java_executable_exec_path,
             "{binary}": intellij.binary_path,
-            "{project_dir}": intellij_project.project_dir,
             "{jvm_flags}": "\n".join(['"-D%s=%s",' % (k, v) for k,v in jvm_props.items()])
         },
     )

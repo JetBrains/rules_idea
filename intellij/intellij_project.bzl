@@ -20,6 +20,7 @@ intellij_project = rule(
     attrs = {
         "project_dir": attr.string(
             doc = "path to main intellij project",
+            default = ".ijwb"
         ),
         "project_files": attr.label_list(
             doc = "intellij project files",
@@ -29,7 +30,7 @@ intellij_project = rule(
     provides = [ platform_common.ToolchainInfo ],
 )
 
-def setup_intellij_project(name, project_dir):
+def setup_intellij_project(name, project_dir = ".ijwb"):
     intellij_project(
         name = "%s_toolchain" % name,
         project_dir = project_dir,
