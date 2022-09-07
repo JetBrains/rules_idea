@@ -14,6 +14,7 @@ import kotlinx.coroutines.*
 import java.nio.file.Path
 import kotlin.io.path.createTempFile
 import java.nio.file.Paths
+import com.intellij.warmup.util.*
 
 fun statusFromThrowable(e: Throwable): StatusException {
     var sts = Status.fromThrowable(e)

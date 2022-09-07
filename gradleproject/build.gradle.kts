@@ -5,25 +5,25 @@ import kotlin.collections.setOf
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.5.10"
-    id("org.jetbrains.intellij") version "1.4.0"
-    id("com.google.protobuf") version "0.8.13"
+    id("org.jetbrains.kotlin.jvm") version "1.7.10"
+    id("org.jetbrains.intellij") version "1.8.1"
+    id("com.google.protobuf") version "0.8.19"
 }
 
 group = "com.example"
 version = "1.0-SNAPSHOT"
-val grpcVersion = "1.31.1"
-val grpcKotlinVersion = "0.2.0" // CURRENT_GRPC_KOTLIN_VERSION
+val grpcVersion = "1.48.1"
+val grpcKotlinVersion = "1.3.0"
 val protobufVersion = "3.15.8"
-val coroutinesVersion = "1.3.8"
-val nettyVersion = "4.1.72.Final"
+val coroutinesVersion = "1.6.4"
+val nettyVersion = "4.1.79.Final"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("javax.annotation:javax.annotation-api:1.2")
+    implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-netty:$grpcVersion")
@@ -61,7 +61,7 @@ protobuf {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
         id("grpckt") {
-            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk7@jar"
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk8@jar"
         }
     }
     generateProtoTasks {
@@ -92,9 +92,12 @@ sourceSets {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
-    version.set("2021.2.3")
+    version.set("2022.2.1")
     type.set("IU") // Target IDE Platform
-    plugins.set(listOf("intellij.indexing.shared:212.5457.6", "intellij.indexing.shared.core"))
+    plugins.set(listOf(
+        "intellij.indexing.shared:222.3739.24",
+        "intellij.indexing.shared.core"
+    ))
 }
 
 tasks {

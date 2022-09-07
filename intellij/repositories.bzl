@@ -17,14 +17,14 @@ _PROTOBUF_SHA256 = "9ceef0daf7e8be16cd99ac759271eb08021b53b1c7b6edd399953a763902
 _RULES_JVM_EXTERNAL_VERSION = "4.2"
 _RULES_JVM_EXTERNAL_SHA256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca"
 
-_GRPC_JAVA_VERSION = "1.45.0"
-_GRPC_JAVA_SHA256 = "0a2aebd9b4980c3d555246a27d365349aa9327acf1bc3ed3b545c3cc9594f2e9"
+_GRPC_JAVA_VERSION = "1.45.1"
+_GRPC_JAVA_SHA256 = "ede3d9dcd2438f7e82b2e7f6a436a78bc7f0ebeb982415caec47de8f1bebf303"
 
-_RULES_KOTLIN_VERSION = "1.5.0"
-_RULES_KOTLIN_SHA256 = "12d22a3d9cbcf00f2e2d8f0683ba87d3823cb8c7f6837568dd7e48846e023307"
+_RULES_KOTLIN_VERSION = "1.7.0-RC-3"
+_RULES_KOTLIN_SHA256 = "f033fa36f51073eae224f18428d9493966e67c27387728b6be2ebbdae43f140e"
 
-_GRPC_KOTLIN_VERSION = "1.2.1"
-_GRPC_KOTLIN_SHA256 = "9d9b09a7dcc8cee1adf1e5c79a3b68d9a45e8b6f1e5b7f5a31b6410eea7d8ad0"
+_GRPC_KOTLIN_VERSION = "1.3.0"
+_GRPC_KOTLIN_SHA256 = "7d06ab8a87d4d6683ce2dea7770f1c816731eb2a172a7cbb92d113ea9f08e5a7"
 
 _RULES_CC_VERSION = "0.0.1"
 _RULES_CC_SHA256 = "4dccbfd22c0def164c8f47458bd50e0c7148f3d92002cdb459c2a96a68498241"
@@ -65,42 +65,15 @@ RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
 }
 
 
-def rules_intellij_repositories():
+def rules_intellij_repositories(
+    maven_install_name = "rules_intellij_maven",
+    self_repo_name = "rules_intellij",
+):
     maybe(
         http_archive,
         name = "bazel_skylib",
         sha256 = _BAZEL_SKYLIB_SHA256,
         urls = _BAZEL_SKYLIB_URLS,
-    )
-
-    maybe(
-        http_archive,
-        name = "build_bazel_integration_testing",
-        urls = [
-            "https://github.com/bazelbuild/bazel-integration-testing/archive/165440b2dbda885f8d1ccb8d0f417e6cf8c54f17.zip",
-        ],
-        strip_prefix = "bazel-integration-testing-165440b2dbda885f8d1ccb8d0f417e6cf8c54f17",
-        sha256 = "2401b1369ef44cc42f91dc94443ef491208dbd06da1e1e10b702d8c189f098e3",
-    )
-
-    maybe(
-        http_archive,
-        name = "io_bazel_rules_go",
-        sha256 = "2b1641428dff9018f9e85c0384f03ec6c10660d935b750e3fa1492a281a53b0f",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.29.0/rules_go-v0.29.0.zip",
-            "https://github.com/bazelbuild/rules_go/releases/download/v0.29.0/rules_go-v0.29.0.zip",
-        ],
-    )
-
-    maybe(
-        http_archive,
-        name = "bazel_gazelle",
-        sha256 = "de69a09dc70417580aabf20a28619bb3ef60d038470c7cf8442fafcf627c21cb",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.24.0/bazel-gazelle-v0.24.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.24.0/bazel-gazelle-v0.24.0.tar.gz",
-        ],
     )
 
     maybe(
@@ -114,6 +87,7 @@ def rules_intellij_repositories():
         name = "com_google_protobuf",
         sha256 = _PROTOBUF_SHA256,
         strip_prefix = "protobuf-%s" % _PROTOBUF_VERSION,
+        repo_mapping = { "@maven": "@%s" % maven_install_name },
         urls = ["https://github.com/protocolbuffers/protobuf/archive/v%s.zip" % _PROTOBUF_VERSION],
     )
     maybe(
@@ -138,6 +112,8 @@ def rules_intellij_repositories():
         sha256 = _GRPC_KOTLIN_SHA256,
         strip_prefix = "grpc-kotlin-%s" % _GRPC_KOTLIN_VERSION,
         url = "https://github.com/grpc/grpc-kotlin/archive/refs/tags/v%s.zip" % _GRPC_KOTLIN_VERSION,
+        repo_mapping = { "@maven": "@%s" % maven_install_name },
+        patches = [ "@rules_intellij//intellij/private:grpc_kotlin.patch" ],
     )
 
     maybe(

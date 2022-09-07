@@ -1,6 +1,4 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@rules_intellij//intellij:intellij_project.bzl", "IntellijProject")
-load("@rules_intellij//intellij:intellij_toolchain.bzl", "Intellij")
 
 IntellijIndexInfo = provider(
     doc = "Information about intellij target indexes",

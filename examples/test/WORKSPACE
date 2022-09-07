@@ -11,21 +11,17 @@ rules_intellij_deps_repositories()
 
 load("@rules_intellij//intellij:toolchains.bzl", "rules_intellij_deps_toolchains")
 rules_intellij_deps_toolchains()
-
-load("@rules_intellij//intellij:intellij.bzl", "intellij")
-intellij(
-    name = "idea_ultimate",
-    version = "2021.2.3",
-    sha256 = "89ad86c940ab1cc7dc13882cd705919830ccfb02814789c0f9389fff26af1ad1",
-    type = "ideaIU",
-    plugins = {
-        "indexing-shared-ultimate:intellij.indexing.shared:212.5457.6": "d0dc4254cd961669722febeda81ee6fd480b938efb21a79559b51f8b58500ea6", 
-        "indexing-shared:intellij.indexing.shared.core": "",
-    },
+load("@rules_intellij//intellij:intellij.bzl", 
+    "idea_UI_2021_2_4",
+    "idea_UI_2022_2",
+    "idea_UI_2022_2_1",
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+idea_UI_2021_2_4()
+idea_UI_2022_2()
+idea_UI_2022_2_1()
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 http_file(
     name = "bazel_2022.02.23.0.0-api-version-212",
     urls = [ "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=161082", ],

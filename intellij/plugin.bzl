@@ -22,9 +22,9 @@ _collect_plugin_jars = rule(
 
 def wrap_plugin(
     name, 
-    ide_repo, 
+    ide_repo,
     srcs, 
-    deps, 
+    deps,
     resources = [],
     ide_plugins = [],
 ):
@@ -46,6 +46,7 @@ def wrap_plugin(
             "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
         ],
         resources = resources,
+        exec_compatible_with = [ "@%s_defs//:constraint_value" % ide_repo ],
         visibility = ["//visibility:public"],
     )
     java_binary(
