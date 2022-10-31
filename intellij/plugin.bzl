@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_library", "java_binary")
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_kotlin_for_rules_intellij//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
 def _collect_plugin_jars_impl(ctx):
@@ -41,9 +41,9 @@ def wrap_plugin(
         srcs = srcs,
         deps = deps + [ 
             "%s_ide_deps" % name, 
-            "@com_github_jetbrains_kotlin//:kotlin-stdlib",
-            "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
-            "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
+            # "@com_github_jetbrains_kotlin//:kotlin-stdlib",
+            # "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
+            # "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
         ],
         resources = resources,
         exec_compatible_with = [ "@%s_defs//:constraint_value" % ide_repo ],

@@ -1,3 +1,7 @@
-#build --disk_cache=/tmp/bazel_disk_cache
 build --repository_cache=/tmp/bazel_repo_cache
 build --java_runtime_version=remotejdk_11
+
+build --disk_cache=/tmp/bazel_disk_cache
+build --repository_cache=/tmp/bazel_repo_cache
+
+build --override_repository=rules_kotlin_for_rules_intellij=/Users/glebkolobkov/Downloads/rules_kotlin_release

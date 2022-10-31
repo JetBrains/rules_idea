@@ -1,5 +1,5 @@
 load("@rules_intellij//intellij:plugins_directory.bzl", "plugins_directory")
-load("@rules_intellij//intellij/private:utils.bzl", "label_utils")
+load("@rules_intellij//intellij/internal:utils.bzl", "label_utils")
 
 
 Intellij = provider(

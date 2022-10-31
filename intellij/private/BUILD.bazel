@@ -1,4 +1,12 @@
+load("@rules_java//java:defs.bzl", "java_import")
+
 exports_files([ 
     "maven_install.json",
     "grpc_kotlin.patch",
 ])
+
+java_import(
+    name = "worker",
+    jars = ["worker.jar"],
+    visibility = ["//visibility:public"],
+)

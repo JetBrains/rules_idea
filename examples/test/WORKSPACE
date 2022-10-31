@@ -9,17 +9,22 @@ rules_intellij_repositories()
 load("@rules_intellij//intellij:deps_repositories.bzl", "rules_intellij_deps_repositories")
 rules_intellij_deps_repositories()
 
-load("@rules_intellij//intellij:toolchains.bzl", "rules_intellij_deps_toolchains")
+load("@rules_intellij//intellij:deps_toolchains.bzl", "rules_intellij_deps_toolchains")
 rules_intellij_deps_toolchains()
-load("@rules_intellij//intellij:intellij.bzl", 
-    "idea_UI_2021_2_4",
-    "idea_UI_2022_2",
-    "idea_UI_2022_2_1",
+
+load("@rules_intellij//intellij:predefined.bzl", 
+    # "idea_UI_2021_2_4",
+    # "idea_UI_2022_2",
+    # "idea_UI_2022_2_1",
+    # "idea_UI_2022_2_2",
+    "idea_UI_2022_2_3",
 )
 
-idea_UI_2021_2_4()
-idea_UI_2022_2()
-idea_UI_2022_2_1()
+# idea_UI_2021_2_4()
+# idea_UI_2022_2()
+# idea_UI_2022_2_1()
+# idea_UI_2022_2_2()
+idea_UI_2022_2_3()
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 http_file(

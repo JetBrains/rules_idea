@@ -12,7 +12,6 @@ import io.grpc.StatusException
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
 import java.nio.file.Path
-import kotlin.io.path.createTempFile
 import java.nio.file.Paths
 import com.intellij.warmup.util.*
 
@@ -153,13 +152,13 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
                 .setIjxSha256Path(result.files.sha256Path.toString())
                 .build()
         } catch (e: Exception) {
-            if (e.message?.contains("shared index is empty") == true) {
+            /* if (e.message?.contains("shared index is empty") == true) {
                 return IndexResponse.newBuilder()
                     .setIjxPath(createTempFile().toString())
                     .setIjxMetadataPath(createTempFile().toString())
                     .setIjxSha256Path(createTempFile().toString())
                     .build()
-            }
+            } */
             throw e
         }
     }

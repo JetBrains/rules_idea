@@ -2,3 +2,4 @@ constraint_setting(
     name = "intellij_constraint_setting",
     visibility = [ "//visibility:public" ],
 )
+

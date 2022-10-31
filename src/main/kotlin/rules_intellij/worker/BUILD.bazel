@@ -1,5 +1,5 @@
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_kotlinc_options")
+load("@rules_kotlin_for_rules_intellij//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_kotlin_for_rules_intellij//kotlin:core.bzl", "kt_kotlinc_options")
 
 kt_kotlinc_options(
     name = "options",

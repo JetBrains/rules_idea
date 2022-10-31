@@ -6,5 +6,5 @@ rules_intellij_repositories()
 load("@rules_intellij//intellij:deps_repositories.bzl", "rules_intellij_deps_repositories")
 rules_intellij_deps_repositories()
 
-load("@rules_intellij//intellij:toolchains.bzl", "rules_intellij_deps_toolchains")
+load("@rules_intellij//intellij:deps_toolchains.bzl", "rules_intellij_deps_toolchains")
 rules_intellij_deps_toolchains()

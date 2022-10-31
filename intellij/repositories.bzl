@@ -34,6 +34,8 @@ _RULES_PKG_SHA256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558
 
 _NETTY_VERSION = "4.1.72.Final"
 
+_KOTLIN_COROUTINES_VERSION = "1.6.4"
+
 RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "io.grpc:grpc-netty-shaded:%s" % _GRPC_JAVA_VERSION,
 
@@ -48,20 +50,20 @@ RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.9.0",
 
-    "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2",
-    "org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.5.2",
-
-    "org.jetbrains.kotlin:kotlin-stdlib-common:1.5.32",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core:%s" % _KOTLIN_COROUTINES_VERSION,
+    "org.jetbrains.kotlinx:kotlinx-coroutines-debug:%s" % _KOTLIN_COROUTINES_VERSION,
 
     "com.google.protobuf:protobuf-kotlin:%s" % _PROTOBUF_VERSION,
 ]
 
+# _EMPTY_JAP = "@rules_kotlin_for_rules_intellij//third_party:empty_jar"
+
 RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
-    "org.jetbrains.kotlin:kotlin-stdlib": "@com_github_jetbrains_kotlin//:kotlin-stdlib",
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk7": "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk8": "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
-    "org.jetbrains.kotlin:kotlin-script-runtime": "@com_github_jetbrains_kotlin//:kotlin-script-runtime",
-    "org.jetbrains.kotlin:kotlin-reflect": "@com_github_jetbrains_kotlin//:kotlin-reflect",
+    "org.jetbrains.kotlin:kotlin-stdlib": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk7": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
+    "org.jetbrains.kotlin:kotlin-script-runtime": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:script-runtime",
+    "org.jetbrains.kotlin:kotlin-reflect": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-reflect",
 }
 
 
@@ -78,9 +80,12 @@ def rules_intellij_repositories(
 
     maybe(
         http_archive,
-        name = "io_bazel_rules_kotlin",
+        name = "rules_kotlin_for_rules_intellij",
         urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v%s/rules_kotlin_release.tgz" % _RULES_KOTLIN_VERSION],
         sha256 = _RULES_KOTLIN_SHA256,
+        repo_mapping = { 
+            "@dev_io_bazel_rules_kotlin": "@rules_kotlin_for_rules_intellij",
+        },
     )
     maybe(
         http_archive,
@@ -112,7 +117,10 @@ def rules_intellij_repositories(
         sha256 = _GRPC_KOTLIN_SHA256,
         strip_prefix = "grpc-kotlin-%s" % _GRPC_KOTLIN_VERSION,
         url = "https://github.com/grpc/grpc-kotlin/archive/refs/tags/v%s.zip" % _GRPC_KOTLIN_VERSION,
-        repo_mapping = { "@maven": "@%s" % maven_install_name },
+        repo_mapping = { 
+            "@maven": "@%s" % maven_install_name,
+            "@io_bazel_rules_kotlin": "@rules_kotlin_for_rules_intellij",
+        },
         patches = [ "@rules_intellij//intellij/private:grpc_kotlin.patch" ],
     )
 
