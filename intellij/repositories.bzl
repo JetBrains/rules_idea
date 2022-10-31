@@ -20,8 +20,9 @@ _RULES_JVM_EXTERNAL_SHA256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640
 _GRPC_JAVA_VERSION = "1.45.1"
 _GRPC_JAVA_SHA256 = "ede3d9dcd2438f7e82b2e7f6a436a78bc7f0ebeb982415caec47de8f1bebf303"
 
-_RULES_KOTLIN_VERSION = "1.7.0-RC-3"
-_RULES_KOTLIN_SHA256 = "f033fa36f51073eae224f18428d9493966e67c27387728b6be2ebbdae43f140e"
+RULES_KOTLIN_VERSION = "1.7.0-RC-3"
+RULES_KOTLIN_SHA256 = "f033fa36f51073eae224f18428d9493966e67c27387728b6be2ebbdae43f140e"
+RULES_KOTLIN_SRC_SHA256 = "091847be9d046e3fc8f2ab715f9db61201df090019e38343c8fc1e368eb7df3b"
 
 _GRPC_KOTLIN_VERSION = "1.3.0"
 _GRPC_KOTLIN_SHA256 = "7d06ab8a87d4d6683ce2dea7770f1c816731eb2a172a7cbb92d113ea9f08e5a7"
@@ -33,6 +34,8 @@ _RULES_PKG_VERSION = "0.7.0"
 _RULES_PKG_SHA256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2"
 
 _NETTY_VERSION = "4.1.72.Final"
+
+_DAGGER_VERSION = "2.43.2"
 
 _KOTLIN_COROUTINES_VERSION = "1.6.4"
 
@@ -54,23 +57,39 @@ RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-debug:%s" % _KOTLIN_COROUTINES_VERSION,
 
     "com.google.protobuf:protobuf-kotlin:%s" % _PROTOBUF_VERSION,
+
+    # "org.pantsbuild:jarjar:1.7.2",
+    # "javax.annotation:javax.annotation-api:1.3.2",
+
+    # "com.google.protobuf:protobuf-java:3.6.0",
+    # "com.google.protobuf:protobuf-java-util:3.6.0",
+
+    # "com.google.dagger:dagger:%s" % _DAGGER_VERSION,
+    # "com.google.dagger:dagger-compiler:%s" % _DAGGER_VERSION,
+    # "com.google.dagger:dagger-producers:%s" % _DAGGER_VERSION,
 ]
 
-# _EMPTY_JAP = "@rules_kotlin_for_rules_intellij//third_party:empty_jar"
+_EMPTY_JAR = "@rules_intellij//intellij/private:empty_jar"
 
 RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
-    "org.jetbrains.kotlin:kotlin-stdlib": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib",
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk7": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
-    "org.jetbrains.kotlin:kotlin-stdlib-jdk8": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
-    "org.jetbrains.kotlin:kotlin-script-runtime": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:script-runtime",
-    "org.jetbrains.kotlin:kotlin-reflect": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-reflect",
+    "org.jetbrains.kotlin:kotlin-stdlib": _EMPTY_JAR,
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk7": _EMPTY_JAR,
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8": _EMPTY_JAR,
+    "org.jetbrains.kotlin:kotlin-script-runtime": _EMPTY_JAR,
+    "org.jetbrains.kotlin:kotlin-reflect": _EMPTY_JAR,
+    "org.jetbrains.kotlin:kotlin-stdlib-common": _EMPTY_JAR,
 }
 
 
-def rules_intellij_repositories(
-    maven_install_name = "rules_intellij_maven",
-    self_repo_name = "rules_intellij",
-):
+# RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
+#     "org.jetbrains.kotlin:kotlin-stdlib": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib",
+#     "org.jetbrains.kotlin:kotlin-stdlib-jdk7": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
+#     "org.jetbrains.kotlin:kotlin-stdlib-jdk8": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
+#     "org.jetbrains.kotlin:kotlin-script-runtime": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:script-runtime",
+#     "org.jetbrains.kotlin:kotlin-reflect": "@idea_UI_2022_2_3//plugins/Kotlin/kotlinc:kotlin-reflect",
+# }
+
+def rules_intellij_repositories():
     maybe(
         http_archive,
         name = "bazel_skylib",
@@ -81,8 +100,8 @@ def rules_intellij_repositories(
     maybe(
         http_archive,
         name = "rules_kotlin_for_rules_intellij",
-        urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v%s/rules_kotlin_release.tgz" % _RULES_KOTLIN_VERSION],
-        sha256 = _RULES_KOTLIN_SHA256,
+        urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v%s/rules_kotlin_release.tgz" % RULES_KOTLIN_VERSION],
+        sha256 = RULES_KOTLIN_SHA256,
         repo_mapping = { 
             "@dev_io_bazel_rules_kotlin": "@rules_kotlin_for_rules_intellij",
         },
@@ -92,9 +111,10 @@ def rules_intellij_repositories(
         name = "com_google_protobuf",
         sha256 = _PROTOBUF_SHA256,
         strip_prefix = "protobuf-%s" % _PROTOBUF_VERSION,
-        repo_mapping = { "@maven": "@%s" % maven_install_name },
+        repo_mapping = { "@maven": "@rules_intellij_maven" },
         urls = ["https://github.com/protocolbuffers/protobuf/archive/v%s.zip" % _PROTOBUF_VERSION],
     )
+
     maybe(
         http_archive,
         name = "rules_jvm_external",
@@ -118,7 +138,7 @@ def rules_intellij_repositories(
         strip_prefix = "grpc-kotlin-%s" % _GRPC_KOTLIN_VERSION,
         url = "https://github.com/grpc/grpc-kotlin/archive/refs/tags/v%s.zip" % _GRPC_KOTLIN_VERSION,
         repo_mapping = { 
-            "@maven": "@%s" % maven_install_name,
+            "@maven": "@rules_intellij_maven",
             "@io_bazel_rules_kotlin": "@rules_kotlin_for_rules_intellij",
         },
         patches = [ "@rules_intellij//intellij/private:grpc_kotlin.patch" ],

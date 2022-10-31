@@ -6,7 +6,7 @@ exports_files([
 ])
 
 java_import(
-    name = "worker",
-    jars = ["worker.jar"],
+    name = "empty_jar",
+    jars = ["empty.jar"],
     visibility = ["//visibility:public"],
 )

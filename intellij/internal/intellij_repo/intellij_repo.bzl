@@ -41,15 +41,6 @@ def _intellij_repo_impl(rctx):
         content = _ROOT,
     )
 
-    rctx.file(
-        "indexing/BUILD.bazel",
-        "\n".join([
-            'load("@%s//src/main/kotlin/rules_intellij/indexing:indexing_plugin.bzl", "inject_indexing")' % rctx.attr.rules_intellij_repo,
-            'inject_indexing(name = "indexing", ide_repo = "%s")' % rctx.attr.name,
-        ])
-    )
-
-
 _intellij_repo = repository_rule(
     implementation = _intellij_repo_impl,
     attrs = {

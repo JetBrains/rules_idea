@@ -1,9 +1,16 @@
 load(":intellij_kt_toolchain.bzl", "intellij_kt_toolchain")
 
 _TOOLCHAINS_DEFS = """\
-load("@{rules_kotlin_repo}//kotlin/internal:defs.bzl", _KT_TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE")
+load("@rules_kotlin_for_rules_intellij//kotlin/internal:defs.bzl", _KT_TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE")
+# load("@{rules_kotlin_repo}//kotlin:core.bzl", "define_kt_toolchain")
 load("@local_config_platform//:constraints.bzl", "HOST_CONSTRAINTS")
 
+
+# define_kt_toolchain(
+#     name = "_kt_toolchain",
+#     api_version = "{kotlin_version}",
+#     language_version = "{kotlin_version}",
+# )
 
 constraint_value(
     name = "constraint_value",
@@ -15,6 +22,7 @@ toolchain(
     name = "kt_toolchain",
     toolchain_type = _KT_TOOLCHAIN_TYPE,
     toolchain = "//kt_toolchain",
+    # toolchain = "//_kt_toolchain_impl",
     exec_compatible_with = [ ":constraint_value" ] + HOST_CONSTRAINTS,
     visibility = ["//visibility:public"],
 )

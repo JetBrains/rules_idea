@@ -28,7 +28,7 @@ def _kt_toolchain_impl(ctx):
         jdeps_merger = ctx.attr.jdeps_merger,
         kotlin_home = ctx.attr.kotlin_home,
         jvm_stdlibs = java_common.merge(compile_time_providers + runtime_providers),
-        js_stdlibs = [ ctx.attr.js_stdlib ],
+        js_stdlibs = [],
         execution_requirements = {{
             "supports-workers": "1",
             "supports-multiplex-workers": "0",
@@ -60,7 +60,8 @@ kt_toolchain = rule(
             executable = True,
             allow_files = True,
             cfg = "exec",
-            default = "//kt_toolchain:build",
+            # default = "//kt_toolchain:build",
+            default = "@{rules_kotlin_repo}//src/main/kotlin:build",
         ),
         "jdeps_merger": attr.label(
             doc = "the jdeps merger executable",
@@ -85,10 +86,6 @@ kt_toolchain = rule(
                 "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
                 "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
             ],
-        ),
-        "js_stdlib": attr.label(
-            providers = [KtJsInfo],
-            default = "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib-js",
         ),
         "javac_options": attr.label(
             doc = "Compiler options for javac",
@@ -126,27 +123,27 @@ _KT_TOOLCHAIN_BUILD_TP = """\
 load("@rules_java//java:defs.bzl", "java_binary")
 load(":kt_toolchain.bzl", "kt_toolchain")
 
-java_binary(
-    name = "build",
-    data = [
-        "@{rules_kotlin_repo}//src/main/kotlin:jdeps-gen",
-        "@{rules_kotlin_repo}//src/main/kotlin:skip-code-gen",
-        "@{rules_kotlin_repo}//src/main/kotlin/io/bazel/kotlin/compiler",
-        "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/jvm-abi-gen.jar",
-        "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/kotlin-compiler.jar",
-    ],
-    main_class = "io.bazel.kotlin.builder.cmd.Build",
-    visibility = ["//visibility:public"],
-    runtime_deps = [
-        "@{rules_intellij_repo}//intellij/private:worker",
-        "@bazel_tools//tools/jdk:JacocoCoverage",
-    ],
-    env = {{
-        "REPOSITORY_NAME": "{rules_kotlin_repo}",
-        "JVM_ABI_PATH": "external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/jvm-abi-gen.jar",
-        "KOTLIN_COMPILER_JAR_PATH": "external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar",
-    }}
-)
+# java_binary(
+#     name = "build",
+#     data = [
+#         "@{rules_kotlin_repo}//src/main/kotlin:jdeps-gen",
+#         "@{rules_kotlin_repo}//src/main/kotlin:skip-code-gen",
+#         "@{rules_kotlin_repo}//src/main/kotlin/io/bazel/kotlin/compiler",
+#         "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/jvm-abi-gen.jar",
+#         "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/kotlin-compiler.jar",
+#     ],
+#     main_class = "io.bazel.kotlin.builder.cmd.Build",
+#     visibility = ["//visibility:public"],
+#     runtime_deps = [
+#         "@{rules_intellij_repo}//intellij/private:worker",
+#         "@bazel_tools//tools/jdk:JacocoCoverage",
+#     ],
+#     jvm_flags = [
+#         "-DREPOSITORY_NAME={rules_kotlin_repo}",
+#         "-DJVM_ABI_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/jvm-abi-gen.jar",
+#         "-DKOTLIN_COMPILER_JAR_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar",
+#     ],
+# )
 
 kt_toolchain(
     name = "kt_toolchain",

@@ -31,22 +31,25 @@ def wrap_plugin(
     java_library(
         name = "%s_ide_deps" % name,
         exports = [ 
-                "@%s//lib:api" % ide_repo, 
-                "@%s//lib:binary_libs" % ide_repo, 
-            ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
+            "@%s_distr//lib:api" % ide_repo, 
+            "@%s_distr//lib:binary_libs" % ide_repo, 
+        ] + [ "@%s_distr//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
         neverlink = 1,
     )
     kt_jvm_library(
         name = "%s_lib" % name,
         srcs = srcs,
-        deps = deps + [ 
-            "%s_ide_deps" % name, 
-            # "@com_github_jetbrains_kotlin//:kotlin-stdlib",
-            # "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk7",
-            # "@com_github_jetbrains_kotlin//:kotlin-stdlib-jdk8",
+        deps = deps + [ "%s_ide_deps" % name ] + [
+            x % ide_repo 
+            for x in [
+                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-stdlib",
+                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
+                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
+                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-reflect",
+            ]
         ],
         resources = resources,
-        exec_compatible_with = [ "@%s_defs//:constraint_value" % ide_repo ],
+        exec_compatible_with = [ "@%s//:constraint_value" % ide_repo ],
         visibility = ["//visibility:public"],
     )
     java_binary(
