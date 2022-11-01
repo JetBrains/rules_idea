@@ -60,8 +60,7 @@ kt_toolchain = rule(
             executable = True,
             allow_files = True,
             cfg = "exec",
-            # default = "//kt_toolchain:build",
-            default = "@{rules_kotlin_repo}//src/main/kotlin:build",
+            default = "//kt_toolchain:build",
         ),
         "jdeps_merger": attr.label(
             doc = "the jdeps merger executable",
@@ -119,31 +118,37 @@ kt_toolchain = rule(
 
 """
 
+_BUILD_SH_TP = """\
+    --jvm_flag="-DREPOSITORY_NAME={rules_kotlin_repo}" \
+    --jvm_flag="-DJVM_ABI_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/jvm-abi-gen.jar" \
+    --jvm_flag="-DKOTLIN_COMPILER_JAR_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar" \
+    "$@"
+"""
+
 _KT_TOOLCHAIN_BUILD_TP = """\
 load("@rules_java//java:defs.bzl", "java_binary")
+load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_template")
 load(":kt_toolchain.bzl", "kt_toolchain")
 
-# java_binary(
-#     name = "build",
-#     data = [
-#         "@{rules_kotlin_repo}//src/main/kotlin:jdeps-gen",
-#         "@{rules_kotlin_repo}//src/main/kotlin:skip-code-gen",
-#         "@{rules_kotlin_repo}//src/main/kotlin/io/bazel/kotlin/compiler",
-#         "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/jvm-abi-gen.jar",
-#         "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/kotlin-compiler.jar",
-#     ],
-#     main_class = "io.bazel.kotlin.builder.cmd.Build",
-#     visibility = ["//visibility:public"],
-#     runtime_deps = [
-#         "@{rules_intellij_repo}//intellij/private:worker",
-#         "@bazel_tools//tools/jdk:JacocoCoverage",
-#     ],
-#     jvm_flags = [
-#         "-DREPOSITORY_NAME={rules_kotlin_repo}",
-#         "-DJVM_ABI_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/jvm-abi-gen.jar",
-#         "-DKOTLIN_COMPILER_JAR_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar",
-#     ],
-# )
+genrule(
+    name = "expand_build_sh",
+    outs = [ "build.sh" ],
+    srcs = [ "build.sh.tp" ],
+    tools = [ "@{rules_kotlin_repo}//src/main/kotlin:build" ],
+    cmd = "echo \\\"$(location @{rules_kotlin_repo}//src/main/kotlin:build) $$(cat $(SRCS)) \\\" > $@",
+)
+
+sh_binary(
+    name = "build",
+    srcs = [ ":expand_build_sh" ],
+    data = [ 
+        "@{rules_kotlin_repo}//src/main/kotlin:build",
+        "@{intellij_repo}//plugins/Kotlin/kotlinc:annotations",
+        "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/jvm-abi-gen.jar",
+        "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/kotlin-compiler.jar",
+    ],
+    visibility = ["//visibility:public"],
+)
 
 kt_toolchain(
     name = "kt_toolchain",
@@ -162,6 +167,14 @@ def intellij_kt_toolchain(rctx):
             kotlin_version = rctx.attr.kotlin_version,
             rules_kotlin_repo = rctx.attr.rules_kotlin_repo,
         ),
+    )
+    rctx.file(
+        "kt_toolchain/build.sh.tp",
+        _BUILD_SH_TP.format(
+            intellij_repo = rctx.attr.intellij_repo,
+            rules_kotlin_repo = rctx.attr.rules_kotlin_repo,
+            rules_intellij_repo = rctx.attr.rules_intellij_repo,
+        )
     )
     rctx.file(
         "kt_toolchain/BUILD.bazel", 

@@ -13,7 +13,7 @@ import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerDomainSocketChannel;
 import io.netty.channel.unix.DomainSocketAddress;
 
-class NettyDomainSocketServerBuilder {
+public class NettyDomainSocketServerBuilder {
 
     public static NettyDomainSocketServerBuilder forDomainSocket(String socket) {
         return new NettyDomainSocketServerBuilder(socket);
