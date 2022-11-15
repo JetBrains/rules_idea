@@ -4,6 +4,7 @@ _PLUGIN_TPL = """\
 java_import(
     name = "{plugin}",
     jars = glob([ "{plugin}/lib/*.jar" ]),
+    neverlink = 1,
     visibility = ["//visibility:public"],
 )
 """
@@ -78,20 +79,7 @@ def declare_plugins(rctx):
     )
 
 
-def define_compiler_repo(rctx):
-    """Define compiler targets inside Kotlin plugin dir"""
-    rctx.template(
-        "plugins/Kotlin/kotlinc/BUILD.bazel",
-        rctx.attr.compiler_repo_template,
-        substitutions = {
-            "{{.KotlinRulesRepository}}": rctx.attr.rules_kotlin_repo,
-        },
-        executable = False,
-    )
-
-
 def intellij_repo_plugins(rctx):
     download_plugins(rctx)
     check_default_plugins(rctx)
     declare_plugins(rctx)
-    define_compiler_repo(rctx)

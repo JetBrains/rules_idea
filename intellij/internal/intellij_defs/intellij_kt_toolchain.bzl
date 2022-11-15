@@ -33,10 +33,14 @@ def _kt_toolchain_impl(ctx):
             "supports-workers": "1",
             "supports-multiplex-workers": "0",
         }},
-        experimental_use_abi_jars = False,
+        # experimental_use_abi_jars = False,
+        experimental_use_abi_jars = True,
         experimental_strict_kotlin_deps = "off",
-        experimental_report_unused_deps = "off",
+        # experimental_strict_kotlin_deps = "warn",
+        # experimental_report_unused_deps = "off",
+        experimental_report_unused_deps = "warn",
         experimental_reduce_classpath_mode = "NONE",
+        # experimental_reduce_classpath_mode = "KOTLINBUILDER_REDUCED",
         javac_options = ctx.attr.javac_options[JavacOptions] if ctx.attr.javac_options else None,
         kotlinc_options = ctx.attr.kotlinc_options[KotlincOptions] if ctx.attr.kotlinc_options else None,
         empty_jar = ctx.file.empty_jar,
@@ -53,14 +57,14 @@ kt_toolchain = rule(
         "kotlin_home": attr.label(
             doc = "the filegroup defining the kotlin home",
             allow_files = True,
-            default = "@{intellij_repo}//plugins/Kotlin/kotlinc:home",
+            default = "@{kt_compiler_repo}//:home",
         ),
         "kotlinbuilder": attr.label(
             doc = "the kotlin builder executable",
             executable = True,
             allow_files = True,
             cfg = "exec",
-            default = "//kt_toolchain:build",
+            default = "@{rules_kotlin_repo}//src/main/kotlin:build",
         ),
         "jdeps_merger": attr.label(
             doc = "the jdeps merger executable",
@@ -73,17 +77,14 @@ kt_toolchain = rule(
             doc = "The implicit jvm runtime libraries. This is internal.",
             providers = [JavaInfo],
             cfg = "target",
-            default = "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib",
+            default = "@{intellij_repo}//lib:runtime",
         ),
         "jvm_stdlibs": attr.label_list(
             doc = "The jvm stdlibs. This is internal.",
             providers = [JavaInfo],
             cfg = "target",
             default = [
-                "@{intellij_repo}//plugins/Kotlin/kotlinc:annotations",
-                "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib",
-                "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
-                "@{intellij_repo}//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
+                "@{intellij_repo}//lib:runtime",
             ],
         ),
         "javac_options": attr.label(
@@ -118,37 +119,10 @@ kt_toolchain = rule(
 
 """
 
-_BUILD_SH_TP = """\
-    --jvm_flag="-DREPOSITORY_NAME={rules_kotlin_repo}" \
-    --jvm_flag="-DJVM_ABI_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/jvm-abi-gen.jar" \
-    --jvm_flag="-DKOTLIN_COMPILER_JAR_PATH=external/{intellij_repo}/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar" \
-    "$@"
-"""
 
 _KT_TOOLCHAIN_BUILD_TP = """\
 load("@rules_java//java:defs.bzl", "java_binary")
-load("@aspect_bazel_lib//lib:expand_make_vars.bzl", "expand_template")
 load(":kt_toolchain.bzl", "kt_toolchain")
-
-genrule(
-    name = "expand_build_sh",
-    outs = [ "build.sh" ],
-    srcs = [ "build.sh.tp" ],
-    tools = [ "@{rules_kotlin_repo}//src/main/kotlin:build" ],
-    cmd = "echo \\\"$(location @{rules_kotlin_repo}//src/main/kotlin:build) $$(cat $(SRCS)) \\\" > $@",
-)
-
-sh_binary(
-    name = "build",
-    srcs = [ ":expand_build_sh" ],
-    data = [ 
-        "@{rules_kotlin_repo}//src/main/kotlin:build",
-        "@{intellij_repo}//plugins/Kotlin/kotlinc:annotations",
-        "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/jvm-abi-gen.jar",
-        "@{intellij_repo}//plugins/Kotlin/kotlinc:lib/kotlin-compiler.jar",
-    ],
-    visibility = ["//visibility:public"],
-)
 
 kt_toolchain(
     name = "kt_toolchain",
@@ -166,21 +140,10 @@ def intellij_kt_toolchain(rctx):
             intellij_repo = rctx.attr.intellij_repo,
             kotlin_version = rctx.attr.kotlin_version,
             rules_kotlin_repo = rctx.attr.rules_kotlin_repo,
+            kt_compiler_repo = rctx.attr.kt_compiler_repo,
         ),
     )
     rctx.file(
-        "kt_toolchain/build.sh.tp",
-        _BUILD_SH_TP.format(
-            intellij_repo = rctx.attr.intellij_repo,
-            rules_kotlin_repo = rctx.attr.rules_kotlin_repo,
-            rules_intellij_repo = rctx.attr.rules_intellij_repo,
-        )
-    )
-    rctx.file(
         "kt_toolchain/BUILD.bazel", 
-        _KT_TOOLCHAIN_BUILD_TP.format(
-            intellij_repo = rctx.attr.intellij_repo,
-            rules_kotlin_repo = rctx.attr.rules_kotlin_repo,
-            rules_intellij_repo = rctx.attr.rules_intellij_repo,
-        )
+        _KT_TOOLCHAIN_BUILD_TP,
     )

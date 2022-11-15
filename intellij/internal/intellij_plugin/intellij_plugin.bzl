@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_library", "java_binary")
-load("@rules_kotlin_for_rules_intellij//kotlin:jvm.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
 def _collect_plugin_jars_impl(ctx):
@@ -28,28 +28,12 @@ def wrap_plugin(
     resources = [],
     ide_plugins = [],
 ):
-    java_library(
-        name = "%s_ide_deps" % name,
-        exports = [ 
-            "@%s_distr//lib:api" % ide_repo, 
-            "@%s_distr//lib:binary_libs" % ide_repo, 
-        ] + [ "@%s_distr//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
-        neverlink = 1,
-    )
     kt_jvm_library(
         name = "%s_lib" % name,
         srcs = srcs,
-        deps = deps + [ "%s_ide_deps" % name ] + [
-            x % ide_repo 
-            for x in [
-                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-stdlib",
-                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk7",
-                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-stdlib-jdk8",
-                "@%s_distr//plugins/Kotlin/kotlinc:kotlin-reflect",
-            ]
-        ],
+        deps = deps + [ "@%s//lib:api" % ide_repo ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
         resources = resources,
-        exec_compatible_with = [ "@%s//:constraint_value" % ide_repo ],
+        exec_compatible_with = [ "//:constraint_value" ],
         visibility = ["//visibility:public"],
     )
     java_binary(

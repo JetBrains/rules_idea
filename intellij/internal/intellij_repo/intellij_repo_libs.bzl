@@ -6,9 +6,6 @@ java_import(
     name = "binary_libs",
     jars = glob([
         "tools.jar",
-        "3rd-party-rt.jar",
-        "util.jar",
-        "util_rt.jar",
         "jna.jar",
         "jdom.jar",
         "log4j.jar",
@@ -16,9 +13,9 @@ java_import(
         "extensions.jar",
         "trove4j.jar",
     ]),
+    neverlink = 1,
     visibility = ["//visibility:public"],
 )
-
 java_import(
     name = "api",
     jars = glob([
@@ -33,6 +30,18 @@ java_import(
         "platform-impl.jar",
         "3rd-party.jar",
         "stats.jar",
+        "util.jar",
+        "util_rt.jar",
+    ]),
+    neverlink = 1,
+    visibility = ["//visibility:public"],
+)
+
+
+java_import(
+    name = "runtime",
+    jars = glob([
+        "3rd-party-rt.jar",
     ]),
     visibility = ["//visibility:public"],
 )

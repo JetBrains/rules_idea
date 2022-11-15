@@ -29,18 +29,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
-
-#load("@rules_kotlin_for_rules_intellij//kotlin:repositories.bzl", "kotlin_repositories")
-
-load(
-    "@rules_kotlin_for_rules_intellij//src/main/starlark/core/repositories:configured_rules.bzl", 
-    "rules_repository"
-)
-
-load(
-    "@rules_kotlin_for_rules_intellij//src/main/starlark/core/repositories:versions.bzl", 
-    "versions"
-)
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
 
 def rules_intellij_deps_repositories():
@@ -96,23 +85,4 @@ def rules_intellij_deps_repositories():
 
     rules_pkg_dependencies()
 
-    # kotlin_repositories()
-
-    maybe(
-        rules_repository,
-        name = "io_bazel_rules_kotlin_configured",
-        archive = "@rules_kotlin_for_rules_intellij//:rkt_1_7.tgz",
-        parent = "@rules_kotlin_for_rules_intellij//:all",
-        repo_mapping = {
-            "@dev_io_bazel_rules_kotlin": "@rules_kotlin_for_rules_intellij",
-        },
-    )
-    maybe(
-        http_file,
-        name = "kt_java_stub_template",
-        urls = [("https://raw.githubusercontent.com/bazelbuild/bazel/" +
-                 versions.BAZEL_JAVA_LAUNCHER_VERSION +
-                 "/src/main/java/com/google/devtools/build/lib/bazel/rules/java/" +
-                 "java_stub_template.txt")],
-        sha256 = "ab1370fd990a8bff61a83c7bd94746a3401a6d5d2299e54b1b6bc02db4f87f68",
-    )
+    kotlin_repositories()

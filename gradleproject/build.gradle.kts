@@ -81,7 +81,7 @@ sourceSets {
         }
         java {
             srcDir("$projectDir/../src/main/kotlin/rules_intellij/indexing")
-            srcDir("$projectDir/../src/main/kotlin/rules_intellij/domain_socket")
+            srcDir("$projectDir/../src/main/java/rules_intellij/domain_socket")
         }
         resources {
             srcDir("$projectDir/../src/main/resources")

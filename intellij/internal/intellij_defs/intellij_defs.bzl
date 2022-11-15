@@ -1,7 +1,8 @@
 load(":intellij_kt_toolchain.bzl", "intellij_kt_toolchain")
+load(":intellij_indexing.bzl", "intellij_indexing")
 
 _TOOLCHAINS_DEFS = """\
-load("@rules_kotlin_for_rules_intellij//kotlin/internal:defs.bzl", _KT_TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE")
+load("@io_bazel_rules_kotlin//kotlin/internal:defs.bzl", _KT_TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE")
 load("@local_config_platform//:constraints.bzl", "HOST_CONSTRAINTS")
 
 constraint_value(
@@ -25,8 +26,10 @@ platform(
 )
 """
 
+
 def _intellij_defs_impl(rctx):
     intellij_kt_toolchain(rctx)
+    intellij_indexing(rctx)
     rctx.file(
         "BUILD.bazel",
         content = _TOOLCHAINS_DEFS.format(
@@ -44,6 +47,7 @@ intellij_defs = repository_rule(
         "intellij_repo": attr.string(mandatory = True),
         "rules_intellij_repo": attr.string(mandatory = True),
         "rules_kotlin_repo": attr.string(mandatory = True),
+        "kt_compiler_repo": attr.string(mandatory = True),
     },
     local = True,   
 )
