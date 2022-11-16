@@ -3,7 +3,7 @@ _LIBS = """\
 load("@rules_java//java:defs.bzl", "java_import")
 
 java_import(
-    name = "binary_libs",
+    name = "lib",
     jars = glob([
         "tools.jar",
         "jna.jar",
@@ -12,13 +12,6 @@ java_import(
         "bootstrap.jar",
         "extensions.jar",
         "trove4j.jar",
-    ]),
-    neverlink = 1,
-    visibility = ["//visibility:public"],
-)
-java_import(
-    name = "api",
-    jars = glob([
         "app.jar",
         "resources.jar",
         "idea.jar",
@@ -33,16 +26,16 @@ java_import(
         "util.jar",
         "util_rt.jar",
     ]),
-    neverlink = 1,
+    #neverlink = 1,
     visibility = ["//visibility:public"],
 )
-
 
 java_import(
     name = "runtime",
     jars = glob([
         "3rd-party-rt.jar",
     ]),
+    #neverlink = 1,
     visibility = ["//visibility:public"],
 )
 

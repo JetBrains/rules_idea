@@ -81,9 +81,6 @@ def rules_intellij_repositories():
         name = "io_bazel_rules_kotlin",
         urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v%s/rules_kotlin_release.tgz" % _RULES_KOTLIN_VERSION],
         sha256 = _RULES_KOTLIN_SHA256,
-        # repo_mapping = { 
-        #     "@dev_io_bazel_rules_kotlin": "@io_bazel_rules_kotlin",
-        # },
     )
     maybe(
         http_archive,

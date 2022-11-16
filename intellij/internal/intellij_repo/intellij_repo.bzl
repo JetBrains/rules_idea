@@ -16,7 +16,10 @@ filegroup(
 java_binary(
     name = "binary",
     main_class = "com.intellij.idea.Main",
-    runtime_deps = [ "//lib:binary_libs" ],
+    runtime_deps = [ 
+        "//lib", 
+        "//lib:runtime", 
+    ],
     visibility = ["//visibility:public"],
 )
 """

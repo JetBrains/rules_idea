@@ -1,4 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_library", "java_binary")
+load("@rules_java//java:defs.bzl", "java_binary")
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
@@ -10,6 +10,7 @@ def _collect_plugin_jars_impl(ctx):
         runfiles = ctx.runfiles(files = all_jars),
     )
 
+
 _collect_plugin_jars = rule(
     implementation = _collect_plugin_jars_impl,
     attrs = {
@@ -19,6 +20,7 @@ _collect_plugin_jars = rule(
         ),
     },
 )
+
 
 def wrap_plugin(
     name, 
@@ -31,7 +33,7 @@ def wrap_plugin(
     kt_jvm_library(
         name = "%s_lib" % name,
         srcs = srcs,
-        deps = deps + [ "@%s//lib:api" % ide_repo ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
+        deps = deps + [ "@%s//lib" % ide_repo ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
         resources = resources,
         exec_compatible_with = [ "//:constraint_value" ],
         visibility = ["//visibility:public"],

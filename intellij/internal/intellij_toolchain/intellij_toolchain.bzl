@@ -1,5 +1,5 @@
-load("@rules_intellij//intellij:plugins_directory.bzl", "plugins_directory")
-load("@rules_intellij//intellij/internal:utils.bzl", "label_utils")
+load(":plugins_directory.bzl", "plugins_directory")
+load("//intellij/internal:utils.bzl", "label_utils")
 
 
 Intellij = provider(
@@ -29,7 +29,7 @@ def _intellij_toolchain_impl(ctx):
     return [toolchain_info]
 
 
-intellij_toolchain = rule(
+_intellij_toolchain = rule(
     implementation = _intellij_toolchain_impl,
     attrs = {
         "binary": attr.label(
@@ -49,37 +49,27 @@ intellij_toolchain = rule(
 )
 
 
-def setup_intellij_toolchain(name, ide_repo, plugins = {}):
+def intellij_toolchain(name, intellij_repo, plugins = {}):
     reverse_plugins = {}
     for pname, archive in plugins.items():
         reverse_plugins[archive] = pname
 
     if "indexing" not in plugins:
-        reverse_plugins["@%s//indexing" % ide_repo] = "indexing"
+        reverse_plugins["@%s//indexing" % intellij_repo] = "indexing"
 
     plugins_directory(
         name = "%s_plugins" % name,
         plugins = reverse_plugins,
     )
 
-    intellij_toolchain(
-        name = "%s_toolchain" % name,
-        binary = "@%s//:binary_deploy.jar" % ide_repo,
+    _intellij_toolchain(
+        name = name,
+        binary = "@%s//:binary_deploy.jar" % intellij_repo,
         plugins = ":%s_plugins" % name,
         files = [ 
-            "@%s//:runfiles" % ide_repo,
-            "@%s//lib:runfiles" % ide_repo,
-            "@%s//plugins" % ide_repo,
+            "@%s//:runfiles" % intellij_repo,
+            "@%s//lib:runfiles" % intellij_repo,
+            "@%s//plugins" % intellij_repo,
         ],
         visibility = ["//visibility:public"],
     )
-
-    native.toolchain(
-        name = name,
-        exec_compatible_with = [],
-        target_compatible_with = [],
-        toolchain = ":%s_toolchain" % name,
-        toolchain_type = "@rules_intellij//intellij:intellij_toolchain_type",
-        visibility = ["//visibility:public"],
-    )
-

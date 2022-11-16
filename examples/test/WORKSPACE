@@ -34,4 +34,3 @@ http_file(
 )
 
 register_toolchains("//:project")
-register_toolchains("//:ide")

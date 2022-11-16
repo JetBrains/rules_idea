@@ -1,6 +1,4 @@
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
-
 
 _HOME_PATH = "idea.home.path"
 _CONFIG_PATH = "idea.config.path"
@@ -8,7 +6,7 @@ _SYSTEM_PATH = "idea.system.path"
 _PLUGINS_PATH = "idea.plugins.path"
 _INDEXES_JSON_PATH = "local.project.shared.index.json.path"
 
-def _run_with_ide_src_impl(ctx):
+def _run_intellij_src_impl(ctx):
     out = ctx.actions.declare_file("ide_with_plugin_runner.cpp")
 
     intellij = ctx.toolchains["@rules_intellij//intellij:intellij_toolchain_type"].intellij
@@ -59,8 +57,8 @@ def _run_with_ide_src_impl(ctx):
     )
 
 
-_run_with_ide_src = rule(
-    implementation = _run_with_ide_src_impl,
+_run_intellij_src = rule(
+    implementation = _run_intellij_src_impl,
     attrs = {
         "indexes": attr.label(allow_single_file = True),
         "config_dir": attr.string(),
@@ -85,14 +83,16 @@ def run_intellij(
     args = [],
     indexes = None,
     config_dir = None,
-    system_dir = None
+    system_dir = None,
+    exec_compatible_with = None,
 ):
-    _run_with_ide_src(
+    _run_intellij_src(
         name = "_%s_run_src" % name,
         indexes = indexes,
         config_dir = config_dir,
         system_dir = system_dir,
         jvm_props = jvm_props,
+        exec_compatible_with = exec_compatible_with,
     )
     cc_binary(
         name = name,

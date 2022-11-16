@@ -1,9 +1,12 @@
 load(":intellij_kt_toolchain.bzl", "intellij_kt_toolchain")
 load(":intellij_indexing.bzl", "intellij_indexing")
+load(":intellij_run.bzl", "intellij_run")
 
 _TOOLCHAINS_DEFS = """\
+load("@{rules_intellij_repo}//intellij/internal/intellij_toolchain:intellij_toolchain.bzl", "intellij_toolchain")
 load("@io_bazel_rules_kotlin//kotlin/internal:defs.bzl", _KT_TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE")
 load("@local_config_platform//:constraints.bzl", "HOST_CONSTRAINTS")
+load(":run.bzl", "run")
 
 constraint_value(
     name = "constraint_value",
@@ -24,18 +27,38 @@ platform(
     constraint_values = [ ":constraint_value" ] + HOST_CONSTRAINTS,
     visibility = ["//visibility:public"],
 )
+
+intellij_toolchain(
+    name = "intellij_toolchain",
+    intellij_repo = "{intellij_repo}",
+    plugins = {{
+        "indexing": "//indexing",
+    }},
+)
+
+toolchain(
+    name = "toolchain",
+    toolchain_type = "@{rules_intellij_repo}//intellij:intellij_toolchain_type",
+    toolchain = ":intellij_toolchain",
+    exec_compatible_with = [ ":constraint_value" ] + HOST_CONSTRAINTS,
+    visibility = ["//visibility:public"],
+)
+
+run(name = "run")
 """
 
 
 def _intellij_defs_impl(rctx):
     intellij_kt_toolchain(rctx)
     intellij_indexing(rctx)
+    intellij_run(rctx)
     rctx.file(
         "BUILD.bazel",
         content = _TOOLCHAINS_DEFS.format(
             kotlin_version = rctx.attr.kotlin_version,
             rules_intellij_repo = rctx.attr.rules_intellij_repo,
             rules_kotlin_repo = rctx.attr.rules_kotlin_repo,
+            intellij_repo = rctx.attr.intellij_repo,
         ),
     )
 
