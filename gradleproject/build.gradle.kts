@@ -92,10 +92,16 @@ sourceSets {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
+    // version.set("2021.2.4")
+    // version.set("2022.2.2")
     version.set("2022.2.3")
+
     type.set("IU") // Target IDE Platform
     plugins.set(listOf(
+        // "intellij.indexing.shared:221.6008.13",
+        // "intellij.indexing.shared:222.4167.21",
         "intellij.indexing.shared:222.4345.14",
+
         "intellij.indexing.shared.core"
     ))
 }

@@ -6,7 +6,7 @@ load("//intellij/internal/intellij_defs:intellij_defs.bzl", "intellij_defs")
 RULES_INTELLIJ = Label("//:all")
 
 
-def intellij(name, register = True, **kwargs):
+def intellij(name, register = False, **kwargs):
     kotlin_version = kwargs.pop("kotlin_version")
     intellij_repo_name = "%s_distr" % name
 

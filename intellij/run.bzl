@@ -8,7 +8,7 @@ def _run_intellij_impl(ctx):
     out = ctx.actions.declare_file("%s.sh" % ctx.attr.name)
 
     intellij = ctx.toolchains["@rules_intellij//intellij:intellij_toolchain_type"].intellij
-    # intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project
+    intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project
     java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:runtime_toolchain_type"].java_runtime
     jvm_props = {} 
     jvm_props.update(ctx.attr.jvm_props)
@@ -23,11 +23,15 @@ def _run_intellij_impl(ctx):
         fail("%s already in jvm_props, but also config_dir attribute specified" % _CONFIG_PATH)
     elif ctx.attr.config_dir:
         jvm_props[_CONFIG_PATH] = ctx.attr.config_dir
+    else:
+        jvm_props[_CONFIG_PATH] = "~/.rules_intellij/%s/config" % intellij.id
 
     if _SYSTEM_PATH in jvm_props and ctx.attr.system_dir:
         fail("%s already in jvm_props, but also system_dir attribute specified" % _SYSTEM_PATH)
-    elif ctx.attr.config_dir:
+    elif ctx.attr.system_dir:
         jvm_props[_SYSTEM_PATH] = ctx.attr.system_dir
+    else:
+        jvm_props[_SYSTEM_PATH] = "~/.rules_intellij/%s/system" % intellij.id
 
     if _INDEXES_JSON_PATH in jvm_props and ctx.file.indexes:
         fail("%s already in jvm_props, but also indexes attribute specified" % _INDEXES_JSON_PATH)
@@ -39,7 +43,7 @@ def _run_intellij_impl(ctx):
         output = out,
         substitutions = {
             "%%binary%%": intellij.binary_path,
-            # "%%project_dir%%": intellij_project.project_dir,
+            "%%project_dir%%": intellij_project.project_dir,
             "%%jvm_flags%%": " \\\n    ".join(['"--jvm_flag=-D%s=%s"' % (k, v) for k,v in jvm_props.items()])
         },
         is_executable = True,
@@ -65,13 +69,13 @@ _run_intellij = rule(
         "system_dir": attr.string(),
         "jvm_props": attr.string_dict(),
         "_template": attr.label(
-            default = "@rules_intellij//intellij/internal/intellij_toolchain:run_intellij.sh.tp",
+            default = "@rules_intellij//intellij/internal/misc:run_intellij.sh.tp",
             allow_single_file = True,
         ),
     },
     toolchains = [
         "@rules_intellij//intellij:intellij_toolchain_type",
-        # "@rules_intellij//intellij:intellij_project_toolchain_type",
+        "@rules_intellij//intellij:intellij_project_toolchain_type",
         "@bazel_tools//tools/jdk:runtime_toolchain_type",
     ],
     executable = True,

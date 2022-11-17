@@ -3,6 +3,7 @@ load("@rules_java//java:defs.bzl", "java_import")
 exports_files([ 
     "maven_install.json",
     "grpc_kotlin.patch",
+    "run_intellij.sh.tp",
 ])
 
 java_import(

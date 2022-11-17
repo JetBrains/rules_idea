@@ -1,5 +1,6 @@
 load("@rules_intellij//intellij:intellij_project.bzl", "setup_intellij_project")
 load("@rules_intellij//intellij:indexing.bzl", "generate_indexes")
+load("@rules_intellij//intellij:run.bzl", "run_intellij")
 
 
 setup_intellij_project(
@@ -15,3 +16,5 @@ generate_indexes(
         "//baz",
     ],
 )
+
+run_intellij(name = "run")

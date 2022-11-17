@@ -13,24 +13,20 @@ load("@rules_intellij//intellij:deps_toolchains.bzl", "rules_intellij_deps_toolc
 rules_intellij_deps_toolchains()
 
 load("@rules_intellij//intellij:predefined.bzl", 
-    # "idea_UI_2021_2_4",
-    # "idea_UI_2022_2",
-    # "idea_UI_2022_2_1",
+    "idea_UI_2021_2_4",
     "idea_UI_2022_2_2",
     "idea_UI_2022_2_3",
 )
 
-# idea_UI_2021_2_4()
-# idea_UI_2022_2()
-# idea_UI_2022_2_1()
+idea_UI_2021_2_4()
 idea_UI_2022_2_2()
 idea_UI_2022_2_3()
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
-http_file(
-    name = "bazel_2022.02.23.0.0-api-version-212",
-    urls = [ "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=161082", ],
-    sha256 = "6d91e41cb934f1d9cb1fe07acd9ce4f077d66bd4460e2223cc901229b7b558f0",
-)
+# load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+# http_file(
+#     name = "bazel_2022.02.23.0.0-api-version-212",
+#     urls = [ "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=161082", ],
+#     sha256 = "6d91e41cb934f1d9cb1fe07acd9ce4f077d66bd4460e2223cc901229b7b558f0",
+# )
 
 register_toolchains("//:project")

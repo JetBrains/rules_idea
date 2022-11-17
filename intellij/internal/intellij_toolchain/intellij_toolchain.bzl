@@ -5,6 +5,7 @@ load("//intellij/internal:utils.bzl", "label_utils")
 Intellij = provider(
     doc = "Information about intellij",
     fields = {
+        "id": "Intellij Id",
         "binary": "Intellij binary",
         "binary_path": "Intellij binary path",
         "plugins": "Plugins",
@@ -18,6 +19,7 @@ Intellij = provider(
 def _intellij_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         intellij = Intellij(
+            id = ctx.attr.id,
             binary = ctx.attr.binary,
             binary_path = label_utils.directory_with_name(ctx.attr.binary.label),
             plugins = ctx.files.plugins,
@@ -32,6 +34,10 @@ def _intellij_toolchain_impl(ctx):
 _intellij_toolchain = rule(
     implementation = _intellij_toolchain_impl,
     attrs = {
+        "id": attr.string(
+            doc = "Some unique Intellij Id",
+            mandatory = True,
+        ),
         "binary": attr.label(
             doc = "Intellij binary",
         ),
@@ -63,6 +69,7 @@ def intellij_toolchain(name, intellij_repo, plugins = {}):
 
     _intellij_toolchain(
         name = name,
+        id = intellij_repo,
         binary = "@%s//:binary" % intellij_repo,
         plugins = ":%s_plugins" % name,
         files = [ 
