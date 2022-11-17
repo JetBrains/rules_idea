@@ -1,16 +1,14 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary")
-
 _HOME_PATH = "idea.home.path"
 _CONFIG_PATH = "idea.config.path"
 _SYSTEM_PATH = "idea.system.path"
 _PLUGINS_PATH = "idea.plugins.path"
 _INDEXES_JSON_PATH = "local.project.shared.index.json.path"
 
-def _run_intellij_src_impl(ctx):
-    out = ctx.actions.declare_file("ide_with_plugin_runner.cpp")
+def _run_intellij_impl(ctx):
+    out = ctx.actions.declare_file("%s.sh" % ctx.attr.name)
 
     intellij = ctx.toolchains["@rules_intellij//intellij:intellij_toolchain_type"].intellij
-    intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project
+    # intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project
     java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:runtime_toolchain_type"].java_runtime
     jvm_props = {} 
     jvm_props.update(ctx.attr.jvm_props)
@@ -40,16 +38,18 @@ def _run_intellij_src_impl(ctx):
         template = ctx.file._template,
         output = out,
         substitutions = {
-            "{java}": java_runtime.java_executable_exec_path,
-            "{binary}": intellij.binary_path,
-            "{project_dir}": intellij_project.project_dir,
-            "{jvm_flags}": "\n".join(['"-D%s=%s",' % (k, v) for k,v in jvm_props.items()])
+            "%%binary%%": intellij.binary_path,
+            # "%%project_dir%%": intellij_project.project_dir,
+            "%%jvm_flags%%": " \\\n    ".join(['"--jvm_flag=-D%s=%s"' % (k, v) for k,v in jvm_props.items()])
         },
+        is_executable = True,
     )
+
     return DefaultInfo(
         files = depset([out]),
+        executable = out,
         runfiles = ctx.runfiles(files =
-            [intellij.binary] 
+            intellij.binary.files.to_list()
             + intellij.plugins 
             + intellij.files 
             + java_runtime.files.to_list()
@@ -57,48 +57,28 @@ def _run_intellij_src_impl(ctx):
     )
 
 
-_run_intellij_src = rule(
-    implementation = _run_intellij_src_impl,
+_run_intellij = rule(
+    implementation = _run_intellij_impl,
     attrs = {
         "indexes": attr.label(allow_single_file = True),
         "config_dir": attr.string(),
         "system_dir": attr.string(),
         "jvm_props": attr.string_dict(),
         "_template": attr.label(
-            default = "@rules_intellij//src/main/cpp/intellij_runner:intellij_runner.cpp.tp",
+            default = "@rules_intellij//intellij/internal/intellij_toolchain:run_intellij.sh.tp",
             allow_single_file = True,
         ),
     },
     toolchains = [
         "@rules_intellij//intellij:intellij_toolchain_type",
-        "@rules_intellij//intellij:intellij_project_toolchain_type",
+        # "@rules_intellij//intellij:intellij_project_toolchain_type",
         "@bazel_tools//tools/jdk:runtime_toolchain_type",
     ],
+    executable = True,
 )
 
-
-def run_intellij(
-    name,
-    jvm_props = {},
-    args = [],
-    indexes = None,
-    config_dir = None,
-    system_dir = None,
-    exec_compatible_with = None,
-):
-    _run_intellij_src(
-        name = "_%s_run_src" % name,
-        indexes = indexes,
-        config_dir = config_dir,
-        system_dir = system_dir,
-        jvm_props = jvm_props,
-        exec_compatible_with = exec_compatible_with,
-    )
-    cc_binary(
-        name = name,
-        args = args,
-        srcs = [ ":_%s_run_src" % name ],
-        data = [ ":_%s_run_src" % name ] + [ indexes ] if indexes else [],
+def run_intellij(**kwargs):
+    _run_intellij(
         tags = [ "local" ],
-        visibility = ["//visibility:public"],
+        **kwargs
     )

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eux -o errexit -o nounset -o pipefail
+
+%%binary%% \
+    %%jvm_flags%% \
+    $@

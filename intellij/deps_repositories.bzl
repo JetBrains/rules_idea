@@ -50,7 +50,7 @@ def rules_intellij_deps_repositories():
         override_targets = overrides,
         repositories = [  "https://repo.maven.apache.org/maven2/", ],
         version_conflict_policy = "pinned",
-        # maven_install_json = "@%s//intellij/private:maven_install.json" % self_repo_name,
+        # maven_install_json = "@%s//intellij/internal/misc:maven_install.json" % self_repo_name,
     )
 
     maven_install(

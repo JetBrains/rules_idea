@@ -77,14 +77,14 @@ kt_toolchain = rule(
             doc = "The implicit jvm runtime libraries. This is internal.",
             providers = [JavaInfo],
             cfg = "target",
-            default = "@{intellij_repo}//lib:runtime",
+            default = "@{intellij_repo}//lib:no_link_runtime",
         ),
         "jvm_stdlibs": attr.label_list(
             doc = "The jvm stdlibs. This is internal.",
             providers = [JavaInfo],
             cfg = "target",
             default = [
-                "@{intellij_repo}//lib:runtime",
+                "@{intellij_repo}//lib:no_link_runtime",
             ],
         ),
         "javac_options": attr.label(

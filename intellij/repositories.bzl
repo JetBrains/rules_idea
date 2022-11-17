@@ -56,7 +56,7 @@ RULES_INTELLIJ_JAVA_ARTIFACTS = [
     "com.google.protobuf:protobuf-kotlin:%s" % _PROTOBUF_VERSION,
 ]
 
-_EMPTY_JAR = "@rules_intellij//intellij/private:empty_jar"
+_EMPTY_JAR = "@rules_intellij//intellij/internal/misc:empty_jar"
 
 RULES_INTELLIJ_JAVA_OVERRIDE_TARGETS = {
     "org.jetbrains.kotlin:kotlin-stdlib": _EMPTY_JAR,
@@ -116,7 +116,7 @@ def rules_intellij_repositories():
         repo_mapping = { 
             "@maven": "@rules_intellij_maven",
         },
-        patches = [ "@rules_intellij//intellij/private:grpc_kotlin.patch" ],
+        patches = [ "@rules_intellij//intellij/internal/misc:grpc_kotlin.patch" ],
     )
 
     maybe(

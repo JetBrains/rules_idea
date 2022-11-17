@@ -33,7 +33,7 @@ def wrap_plugin(
     kt_jvm_library(
         name = "%s_lib" % name,
         srcs = srcs,
-        deps = deps + [ "@%s//lib" % ide_repo ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
+        deps = deps + [ "@%s//lib:no_link_lib" % ide_repo ] + [ "@%s//plugins:%s" % (ide_repo, x) for x in ide_plugins ],
         resources = resources,
         exec_compatible_with = [ "//:constraint_value" ],
         visibility = ["//visibility:public"],

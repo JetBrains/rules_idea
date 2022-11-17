@@ -18,7 +18,7 @@ Intellij = provider(
 def _intellij_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         intellij = Intellij(
-            binary = ctx.file.binary,
+            binary = ctx.attr.binary,
             binary_path = label_utils.directory_with_name(ctx.attr.binary.label),
             plugins = ctx.files.plugins,
             home_directory = label_utils.directory(ctx.attr.binary.label),
@@ -34,7 +34,6 @@ _intellij_toolchain = rule(
     attrs = {
         "binary": attr.label(
             doc = "Intellij binary",
-            allow_single_file = True,
         ),
         "plugins": attr.label(
             doc = "Plugins files",
@@ -64,7 +63,7 @@ def intellij_toolchain(name, intellij_repo, plugins = {}):
 
     _intellij_toolchain(
         name = name,
-        binary = "@%s//:binary_deploy.jar" % intellij_repo,
+        binary = "@%s//:binary" % intellij_repo,
         plugins = ":%s_plugins" % name,
         files = [ 
             "@%s//:runfiles" % intellij_repo,
