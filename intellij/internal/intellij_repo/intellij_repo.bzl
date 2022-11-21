@@ -6,10 +6,10 @@ load("@rules_java//java:defs.bzl", "java_binary")
 
 filegroup(
     name = "runfiles",
-    srcs = glob([
-        "bin/**",
-        "Resources/**"
-    ]),
+    srcs = glob(
+        include = ["**"],
+        exclude = ["*.bazel"],
+    ),
     visibility = ["//visibility:public"],
 )
 

@@ -57,7 +57,13 @@ java_import(
 
 filegroup(
     name = "runfiles",
-    srcs = glob([ "**" ], exclude = [ "src/**" ]),
+    srcs = glob(
+        include = [ "**" ], 
+        exclude = [ 
+            "src/**",
+            "*.bazel",    
+        ],
+    ),
     visibility = ["//visibility:public"],
 )
 """

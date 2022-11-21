@@ -11,10 +11,14 @@ java_import(
 
 _ALL_PLUGINS = """\
 filegroup(
-    name = "plugins",
-    srcs = glob([
-        "**/*.jar",
-    ]),
+    name = "runfiles",
+    srcs = glob(
+        include = ["**"],
+        exclude = [
+            "**/*.tmLanguage",
+            "*.bazel",
+        ],
+    ),
     visibility = ["//visibility:public"],
 )
 """

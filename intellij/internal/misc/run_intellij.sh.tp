@@ -5,4 +5,4 @@ set -eux -o errexit -o nounset -o pipefail
 %%binary%% \
     %%jvm_flags%% \
     $@ \
-#    "${BUILD_WORKSPACE_DIRECTORY}/%%project_dir%%"
+    "${BUILD_WORKSPACE_DIRECTORY}/%%project_dir%%"

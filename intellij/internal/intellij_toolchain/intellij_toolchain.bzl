@@ -75,7 +75,7 @@ def intellij_toolchain(name, intellij_repo, plugins = {}):
         files = [ 
             "@%s//:runfiles" % intellij_repo,
             "@%s//lib:runfiles" % intellij_repo,
-            "@%s//plugins" % intellij_repo,
+            "@%s//plugins:runfiles" % intellij_repo,
         ],
         visibility = ["//visibility:public"],
     )

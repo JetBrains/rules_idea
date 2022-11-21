@@ -10,7 +10,9 @@ def _run_intellij_impl(ctx):
     intellij = ctx.toolchains["@rules_intellij//intellij:intellij_toolchain_type"].intellij
     intellij_project = ctx.toolchains["@rules_intellij//intellij:intellij_project_toolchain_type"].intellij_project
     java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:runtime_toolchain_type"].java_runtime
-    jvm_props = {} 
+    jvm_props = {
+        "java.system.class.loader": "com.intellij.util.lang.PathClassLoader",
+    } 
     jvm_props.update(ctx.attr.jvm_props)
 
     if not _HOME_PATH in jvm_props:
