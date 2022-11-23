@@ -32,7 +32,7 @@ _RULES_CC_SHA256 = "4dccbfd22c0def164c8f47458bd50e0c7148f3d92002cdb459c2a96a6849
 _RULES_PKG_VERSION = "0.7.0"
 _RULES_PKG_SHA256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2"
 
-_NETTY_VERSION = "4.1.72.Final"
+_NETTY_VERSION = "4.1.79.Final"
 
 _KOTLIN_COROUTINES_VERSION = "1.6.4"
 
@@ -144,7 +144,7 @@ def rules_intellij_repositories():
         url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/{v}/netty-transport-native-epoll-{v}-linux-x86_64.jar".format(
             v = _NETTY_VERSION
         ),
-        sha256 = "3d4639f03ef04d98ce7f9e56978d6ff5f7deaa9b51cc4f1fa92699a6eed8efb8",
+        sha256 = "82efdc8c9b0ce6a37e9b43622ce1e3187287dbbe1bd987cbccee964be3fc0706",
     )
 
     maybe(
@@ -153,7 +153,7 @@ def rules_intellij_repositories():
         url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-epoll/{v}/netty-transport-native-epoll-{v}-linux-aarch_64.jar".format(
             v = _NETTY_VERSION
         ),
-        sha256 = "d093f8e3b58434016f52822450f13d70703f811c5d67c4cc31fb0380f22bd9fb",
+        sha256 = "aec8ba72a9fee5c236058a3fb0b9bd400118ea3fa28152d3c1888392096532f3",
     )
 
     maybe(
@@ -162,7 +162,7 @@ def rules_intellij_repositories():
         url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-kqueue/{v}/netty-transport-native-kqueue-{v}-osx-x86_64.jar".format(
             v = _NETTY_VERSION
         ),
-        sha256 = "4c3bbc22abadfec6fa9bfd0a74ce1948341a4b7f5e657d7397e24a6cd509ad50",
+        sha256 = "bc28604c466eea6e86f051f85c5ce57a15372667d96cc39242feaa9e0fe52337",
     )
 
     maybe(
@@ -171,5 +171,5 @@ def rules_intellij_repositories():
         url = "https://repo1.maven.org/maven2/io/netty/netty-transport-native-kqueue/{v}/netty-transport-native-kqueue-{v}-osx-aarch_64.jar".format(
             v = _NETTY_VERSION
         ),
-        sha256 = "fb3ffbbafa9175c6d125ef87ba925d2b32f0b10c57635902a017be45171c46fb",
+        sha256 = "993270798773cf51454710c55fe5efa35108260af3394b6285933d9a6af033dd",
     )

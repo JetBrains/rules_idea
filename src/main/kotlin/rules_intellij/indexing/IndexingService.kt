@@ -86,7 +86,6 @@ class IndexingService(val indicator: ProgressIndicator): DaemonGrpc.DaemonImplBa
                 .build()
         }
 
-        val indicator = DummyIndicator()
         val project = importOrOpenProject(request.toOpenProjectArgs(), indicator)
         synchronized(this) {
             projectsByIds.putIfAbsent(projectPathHash, project)
