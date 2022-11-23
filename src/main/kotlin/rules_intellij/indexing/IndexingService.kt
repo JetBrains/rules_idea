@@ -4,6 +4,7 @@ import com.intellij.indexing.shared.download.SharedIndexCompression
 import com.intellij.indexing.shared.generator.*
 import com.intellij.indexing.shared.ultimate.persistent.rpc.*
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringHash
 import com.intellij.util.io.exists
@@ -41,7 +42,7 @@ fun StartupRequest.toOpenProjectArgs(): OpenProjectArgs {
     }
 }
 
-class IndexingService: DaemonGrpc.DaemonImplBase() {
+class IndexingService(val indicator: ProgressIndicator): DaemonGrpc.DaemonImplBase() {
     private val deferredStarts = hashMapOf<Long, Deferred<StartupResponse>>()
     private val projectsByIds = hashMapOf<Long, Project>()
     private val ioScope = CoroutineScope(Dispatchers.IO)
@@ -63,8 +64,9 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
             }
             ioScope.launch {
                 try {
-                    ConsoleLog.info("Indexing Server: StartupResponse: $request")
-                    responseObserver.onNext(deferredResponse.await())
+                    val response = deferredResponse.await()
+                    ConsoleLog.info("Indexing Server: StartupResponse: $response")
+                    responseObserver.onNext(response)
                     responseObserver.onCompleted()
                 } catch (e: Throwable) { onError(e) }
             }
@@ -84,11 +86,8 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
                 .build()
         }
 
-
-
         val indicator = DummyIndicator()
         val project = importOrOpenProject(request.toOpenProjectArgs(), indicator)
-
         synchronized(this) {
             projectsByIds.putIfAbsent(projectPathHash, project)
         }
@@ -152,13 +151,13 @@ class IndexingService: DaemonGrpc.DaemonImplBase() {
                 .setIjxSha256Path(result.files.sha256Path.toString())
                 .build()
         } catch (e: Exception) {
-            /* if (e.message?.contains("shared index is empty") == true) {
+            if (e.message?.contains("shared index is empty") == true) {
                 return IndexResponse.newBuilder()
                     .setIjxPath(createTempFile().toString())
                     .setIjxMetadataPath(createTempFile().toString())
                     .setIjxSha256Path(createTempFile().toString())
                     .build()
-            } */
+            }
             throw e
         }
     }

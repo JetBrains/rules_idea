@@ -16,7 +16,7 @@ wrap_plugin(
         "@{rules_intellij_repo}//src/main/proto:indexing_mediator_kt_proto",
         "@{rules_intellij_repo}//src/main/proto:indexing_mediator_kt_grpc_proto",
 
-        "@{rules_intellij_repo}//src/main/java/rules_intellij/domain_socket",
+        "@{rules_intellij_repo}//src/main/kotlin/rules_intellij/domain_socket",
 
         "@com_google_protobuf//:protobuf_java",
         "@com_google_protobuf//:protobuf_java_util",
