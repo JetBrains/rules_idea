@@ -5,19 +5,21 @@ import rules_intellij.domain_socket.NettyDomainSocketServerBuilder
 import com.intellij.indexing.shared.generator.*
 import com.intellij.indexing.shared.ultimate.persistent.rpc.*
 import com.intellij.indexing.shared.ultimate.project.ProjectSharedIndexes
-import com.intellij.indexing.shared.util.ArgsParser
+import com.intellij.indexing.shared.util.*
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ContentIterator
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileFilter
+import com.intellij.platform.util.*
 import com.intellij.util.indexing.roots.IndexableFilesIterator
 import com.intellij.util.indexing.roots.kind.IndexableSetOrigin
+import com.intellij.warmup.util.*
 import io.grpc.Server
-import io.grpc.netty.NettyServerBuilder
 import io.grpc.Status
 import io.grpc.StatusException
+import io.grpc.netty.NettyServerBuilder
 import java.nio.file.Paths
 
 class PersistentProjectArgs(parser: ArgsParser) {
@@ -55,6 +57,8 @@ class ProjectPartialIndexChunk(private val request: IndexRequest) : IndexChunk {
       sources.forEach(fileIterator::processFile)
       return true
     }
+
+    override fun getRootUrls(project: Project) = setOf<String>()
   }
 
   override val rootIterators: List<IndexableFilesIterator> = listOf(ByRequestFileIterator(request))
@@ -81,13 +85,13 @@ internal class PersistentProjectIndexesGenerator: DumpSharedIndexCommand<Persist
     if (args.domainSocket == null) {
       run(NettyServerBuilder
         .forPort(args.port)
-        .addService(IndexingService())
+        .addService(IndexingService(indicator))
         .build(), "${args.port}")
     } else {
       run(NettyDomainSocketServerBuilder
         .forDomainSocket(args.domainSocket!!)
-        .eventGroups(1,  Runtime.getRuntime().availableProcessors())
-        .addService(IndexingService())
+        .eventGroups(1, Runtime.getRuntime().availableProcessors())
+        .addService(IndexingService(indicator))
         .build(), args.domainSocket!!)
     }
   }

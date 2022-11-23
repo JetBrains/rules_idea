@@ -1,6 +1,4 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@rules_intellij//intellij:intellij_project.bzl", "IntellijProject")
-load("@rules_intellij//intellij:intellij_toolchain.bzl", "Intellij")
 
 IntellijIndexInfo = provider(
     doc = "Information about intellij target indexes",
@@ -52,11 +50,15 @@ def _create_worker_defs(ctx, intellij, intellij_project, java_runtime):
     else:
         worker_args.add_all("--java_binary", [ java_runtime.java_executable_exec_path ])
         worker_args.add_all("--ide_home_dir", [ intellij.home_directory ])
-        worker_args.add_all("--ide_binary", [ intellij.binary.path ])
+        worker_args.add_all("--ide_binary", [ intellij.binary.files_to_run.executable.path ])
         worker_args.add_all("--plugins_directory", [ paths.dirname(intellij.plugins[0].path) ])
 
-        tools += java_runtime.files.to_list()
-        tools += intellij.files + [ intellij.binary ]
+        tools += intellij.binary.default_runfiles.files.to_list() 
+        tools += [ 
+            intellij.binary.files_to_run.executable,
+            intellij.binary.files_to_run.runfiles_manifest,
+        ]
+        tools += intellij.files
         tools += intellij.plugins
 
     return struct(
@@ -177,9 +179,9 @@ _indexing_aspect = aspect(
             executable = True,
             cfg = "exec",
         ),
-#        "_debug_log": attr.string(default = "/tmp/intellij_debug"),
-#        "_debug_domain_socket": attr.string(default = "/tmp/test.sock"),
-#        "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
+    #    "_debug_log": attr.string(default = "/tmp/intellij_debug"),
+    #    "_debug_domain_socket": attr.string(default = "/tmp/test.sock"),
+    #    "_debug_endpoint": attr.string(default = "127.0.0.1:9000"),
     },
     toolchains = [
         "@rules_intellij//intellij:intellij_project_toolchain_type",

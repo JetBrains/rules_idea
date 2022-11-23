@@ -1,0 +1,11 @@
+--- kt_jvm_grpc.bzl
++++ kt_jvm_grpc.bzl
+@@ -315,7 +315,7 @@ def kt_jvm_proto_library(
+         name = name,
+         srcs = [helper_target + ".srcjar"],
+         deps = [
+-            "@maven//:com_google_protobuf_protobuf_kotlin",
++            "@com_google_protobuf_protobuf_kotlin//jar",
+             java_proto_target,
+         ],
+         exports = [

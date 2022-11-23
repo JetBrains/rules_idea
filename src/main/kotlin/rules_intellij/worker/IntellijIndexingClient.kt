@@ -193,7 +193,7 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
     private suspend fun startIntellij(): Unit = withContext(Dispatchers.IO) {
         val path = Paths.get("").toAbsolutePath().toString()
         val cmdLine = listOf(
-            listOf(javaBin),
+            listOf(ideRunner),
             listOf(
                 "idea.home.path=$path/$ideHomeDir",
                 "idea.config.path=$dir/config",
@@ -209,10 +209,9 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
                 "intellij.hash.as.local.file.timestamp=true",
                 "idea.trust.all.projects=true",
                 "caches.indexerThreadsCount=1",
-            ).map { "-D$it" },
+                "java.system.class.loader=com.intellij.util.lang.PathClassLoader",
+            ).map { "--jvm_flag=-D$it" },
             listOf(
-                "-jar",
-                ideRunner,
                 "dump-shared-index",
                 "persistent-project",
                 "--socket=$socket",
@@ -227,9 +226,10 @@ class IntellijIndexingClientStarter(args: IntellijIndexingClientStarterArgs): In
             }
         }
 
-        val process = ProcessBuilder()
-            .command(cmdLine)
-            .start()
+        val pb = ProcessBuilder()
+        pb.environment().remove("RUNFILES_MANIFEST_FILE")
+        pb.environment().remove("JAVA_RUNFILES")
+        val process = pb.command(cmdLine).start()
 
         Runtime.getRuntime().addShutdownHook(Thread { closeAll(process) })
 

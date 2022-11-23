@@ -1,10 +1,11 @@
-load("@rules_intellij//intellij:plugins_directory.bzl", "plugins_directory")
-load("@rules_intellij//intellij/private:utils.bzl", "label_utils")
+load(":plugins_directory.bzl", "plugins_directory")
+load("//intellij/internal:utils.bzl", "label_utils")
 
 
 Intellij = provider(
     doc = "Information about intellij",
     fields = {
+        "id": "Intellij Id",
         "binary": "Intellij binary",
         "binary_path": "Intellij binary path",
         "plugins": "Plugins",
@@ -18,7 +19,8 @@ Intellij = provider(
 def _intellij_toolchain_impl(ctx):
     toolchain_info = platform_common.ToolchainInfo(
         intellij = Intellij(
-            binary = ctx.file.binary,
+            id = ctx.attr.id,
+            binary = ctx.attr.binary,
             binary_path = label_utils.directory_with_name(ctx.attr.binary.label),
             plugins = ctx.files.plugins,
             home_directory = label_utils.directory(ctx.attr.binary.label),
@@ -29,12 +31,15 @@ def _intellij_toolchain_impl(ctx):
     return [toolchain_info]
 
 
-intellij_toolchain = rule(
+_intellij_toolchain = rule(
     implementation = _intellij_toolchain_impl,
     attrs = {
+        "id": attr.string(
+            doc = "Some unique Intellij Id",
+            mandatory = True,
+        ),
         "binary": attr.label(
             doc = "Intellij binary",
-            allow_single_file = True,
         ),
         "plugins": attr.label(
             doc = "Plugins files",
@@ -49,37 +54,28 @@ intellij_toolchain = rule(
 )
 
 
-def setup_intellij_toolchain(name, ide_repo, plugins = {}):
+def intellij_toolchain(name, intellij_repo, plugins = {}):
     reverse_plugins = {}
     for pname, archive in plugins.items():
         reverse_plugins[archive] = pname
 
     if "indexing" not in plugins:
-        reverse_plugins["@%s//indexing" % ide_repo] = "indexing"
+        reverse_plugins["@%s//indexing" % intellij_repo] = "indexing"
 
     plugins_directory(
         name = "%s_plugins" % name,
         plugins = reverse_plugins,
     )
 
-    intellij_toolchain(
-        name = "%s_toolchain" % name,
-        binary = "@%s//:binary_deploy.jar" % ide_repo,
+    _intellij_toolchain(
+        name = name,
+        id = intellij_repo,
+        binary = "@%s//:binary" % intellij_repo,
         plugins = ":%s_plugins" % name,
         files = [ 
-            "@%s//:runfiles" % ide_repo,
-            "@%s//lib:runfiles" % ide_repo,
-            "@%s//plugins" % ide_repo,
+            "@%s//:runfiles" % intellij_repo,
+            "@%s//lib:runfiles" % intellij_repo,
+            "@%s//plugins:runfiles" % intellij_repo,
         ],
         visibility = ["//visibility:public"],
     )
-
-    native.toolchain(
-        name = name,
-        exec_compatible_with = [],
-        target_compatible_with = [],
-        toolchain = ":%s_toolchain" % name,
-        toolchain_type = "@rules_intellij//intellij:intellij_toolchain_type",
-        visibility = ["//visibility:public"],
-    )
-
