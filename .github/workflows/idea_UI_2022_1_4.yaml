@@ -1,4 +1,4 @@
-name: idea_UI_2022_2_4
+name: idea_UI_2022_1_4
 
 on: [pull_request]
 
@@ -16,9 +16,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "/tmp/bazel"
-          key: idea_UI_2022_2_4
+          key: idea_UI_2022_1_4
 
       - name: Generate Indexes
         run: |
           cd examples/test
-          bazel build //:indexes --config idea_UI_2022_2_4
+          bazel build //:indexes --config idea_UI_2022_1_4
