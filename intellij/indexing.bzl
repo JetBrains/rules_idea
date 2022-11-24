@@ -222,7 +222,7 @@ def _generate_indexes_impl(ctx):
     ]
 
 
-_generate_indexes = rule(
+generate_indexes = rule(
     implementation = _generate_indexes_impl,
     attrs = {
         "deps": attr.label_list(
@@ -233,9 +233,3 @@ _generate_indexes = rule(
         ),
     },
 )
-
-def generate_indexes(name, deps):
-    _generate_indexes(
-        name = name, 
-        deps = deps,
-    )

@@ -15,6 +15,7 @@ generate_indexes(
         "//bar",
         "//baz",
     ],
+    tags = [ "no-cache" ],
 )
 
 run_intellij(name = "run")

@@ -15,7 +15,7 @@ filegroup(
     srcs = glob(
         include = ["**"],
         exclude = [
-            "**/*.tmLanguage",
+            "**/* *",
             "*.bazel",
         ],
     ),
