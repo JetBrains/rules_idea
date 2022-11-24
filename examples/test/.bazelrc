@@ -1,13 +1,22 @@
 build --java_runtime_version=remotejdk_11
 
-build --disk_cache=/tmp/bazel_disk_cache
-build --repository_cache=/tmp/bazel_repo_cache
+build --disk_cache=/tmp/bazel/disk_cache
+build --repository_cache=/tmp/bazel/repo_cache
 
 build:idea_UI_2021_2_4 --extra_toolchains=@idea_UI_2021_2_4//toolchains:all
 build:idea_UI_2021_2_4 --extra_execution_platforms=@idea_UI_2021_2_4//:platform
+
+build:idea_UI_2021_3_3 --extra_toolchains=@idea_UI_2021_3_3//toolchains:all
+build:idea_UI_2021_3_3 --extra_execution_platforms=@idea_UI_2021_3_3//:platform
+
+build:idea_UI_2022_1_4 --extra_toolchains=@idea_UI_2022_1_4//toolchains:all
+build:idea_UI_2022_1_4 --extra_execution_platforms=@idea_UI_2022_1_4//:platform
 
 build:idea_UI_2022_2_2 --extra_toolchains=@idea_UI_2022_2_2//toolchains:all
 build:idea_UI_2022_2_2 --extra_execution_platforms=@idea_UI_2022_2_2//:platform
 
 build:idea_UI_2022_2_3 --extra_toolchains=@idea_UI_2022_2_3//toolchains:all
 build:idea_UI_2022_2_3 --extra_execution_platforms=@idea_UI_2022_2_3//:platform
+
+build:idea_UI_2022_2_4 --extra_toolchains=@idea_UI_2022_2_4//toolchains:all
+build:idea_UI_2022_2_4 --extra_execution_platforms=@idea_UI_2022_2_4//:platform
