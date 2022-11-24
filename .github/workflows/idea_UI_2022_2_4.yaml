@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   test:
@@ -13,4 +13,6 @@ jobs:
       - uses: bazelbuild/setup-bazelisk@v2
 
       - name: Generate Indexes
-        run: bazel build //:indexes --config idea_UI_2022_2_4
+        run: |
+          cd examples/test
+          bazel build //:indexes --config idea_UI_2022_2_4
